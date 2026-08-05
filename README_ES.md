@@ -54,6 +54,7 @@ Un boilerplate open-source listo para producción diseñado para acelerar drást
 
 Acceda a la documentación detallada por áreas directamente en GitHub:
 
+* 💡 **[Guía de 100 Nichos Digitales e Integración BaaS](./docs/niches/niche-solutions_ES.md)** — Mapeo de 100 sectores, automatizaciones n8n y modelos de cobro (Split, Escrow, Suscripción).
 * 🌐 **[Arquitectura y Enrutamiento Traefik](./docs/infrastructure/architecture.md)** — Puertos, rutas Traefik, modo DEV vs PROD.
 * 🔒 **[Seguridad y Hardening de la VPS](./docs/infrastructure/security-passwords.md)** — Firewall UFW, Fail2ban y respaldos `.env`.
 * 🏗️ **[Guía de CI/CD y Jenkins](./docs/cicd/jenkins-guide.md)** — Inyección de `.env` por proyecto y limpieza automática de imágenes Docker.

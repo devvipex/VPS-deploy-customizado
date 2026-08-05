@@ -63,6 +63,7 @@ An open-source, production-ready boilerplate designed to dramatically accelerate
 
 Explore detailed documentation categorized by area and context:
 
+* 💡 **[100 High-Demand Industry Niche Solutions](./docs/niches/niche-solutions.md)** — Blueprints & BaaS workflows (Asaas / Stripe / Split Payments) across 100 commercial verticals.
 * 🌐 **[Architecture & Traefik Routing](./docs/infrastructure/architecture.md)** — Ports, Traefik routes, DEV vs PROD mode.
 * 🔒 **[Security & VPS Hardening](./docs/infrastructure/security-passwords.md)** — UFW, Fail2ban, and `.env` UUID backup policy.
 * 🏗️ **[CI/CD & Jenkins Pipeline](./docs/cicd/jenkins-guide.md)** — Injected `.env` workflows and automatic Docker image pruning.
