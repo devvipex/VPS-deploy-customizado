@@ -9,22 +9,22 @@
 The infrastructure is engineered to support two execution modes: **Local Development (DEV)** and **VPS Production (PROD)**.
 
 ```mermaid
-graph TD
-    subgraph LOCAL ENVIRONMENT (DEV)
-        DevCompose[docker-compose.dev.yml] --> PortainerDev[Portainer :9002]
-        DevCompose --> TraefikDev[Traefik :8082]
-        DevCompose --> JenkinsDev[Jenkins :8080]
-        DevCompose --> MongoDev[MongoDB :27017]
-        DevCompose --> RedisDev[Redis :6379]
-        DevCompose --> PostgresDev[Postvector :5432]
+flowchart TD
+    subgraph DEV["Local Environment (DEV)"]
+        DevCompose["docker-compose.dev.yml"] --> PortainerDev["Portainer (:9002)"]
+        DevCompose --> TraefikDev["Traefik (:8082)"]
+        DevCompose --> JenkinsDev["Jenkins (:8080)"]
+        DevCompose --> MongoDev["MongoDB (:27017)"]
+        DevCompose --> RedisDev["Redis (:6379)"]
+        DevCompose --> PostgresDev["Postvector (:5432)"]
     end
 
-    subgraph VPS PRODUCTION (PROD - Docker Swarm)
-        TraefikProd[Traefik SSL Let's Encrypt] --> PortainerProd[Portainer Subdomain]
-        TraefikProd --> JenkinsProd[Jenkins Subdomain]
-        TraefikProd --> N8NProd[n8n Subdomain]
-        TraefikProd --> WebProd[Vite PWA]
-        TraefikProd --> APIProd[NestJS API]
+    subgraph PROD["VPS Production (Docker Swarm)"]
+        TraefikProd["Traefik SSL (Let's Encrypt)"] --> PortainerProd["Portainer Subdomain"]
+        TraefikProd --> JenkinsProd["Jenkins Subdomain"]
+        TraefikProd --> N8NProd["n8n Subdomain"]
+        TraefikProd --> WebProd["Vite PWA"]
+        TraefikProd --> APIProd["NestJS API"]
     end
 ```
 
