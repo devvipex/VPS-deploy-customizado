@@ -1,0 +1,172 @@
+services:
+  # ==========================================
+  # 1. PROXY REVERSO (Traefik DEV - Sem SSL)
+  # ==========================================
+  traefik:
+    image: traefik:v2.10
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+    ports:
+      - "80:80"
+      - "8082:8080" # Traefik Dashboard (http://localhost:8082)
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - dev_net
+
+  # ==========================================
+  # 2. GESTÃO DE CONTAINERS (Portainer DEV)
+  # ==========================================
+  portainer:
+    image: portainer/portainer-ce:latest
+    command: -H unix:///var/run/docker.sock
+    ports:
+      - "${PORTAINER_PORT:-9002}:9000"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer_dev_data:/data
+    networks:
+      - dev_net
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.portainer.rule=Host(`portainer.localhost`)"
+      - "traefik.http.services.portainer.loadbalancer.server.port=9000"
+
+  # ==========================================
+  # 3. CI/CD & BUILDS (Jenkins DEV)
+  # ==========================================
+  jenkins:
+    image: jenkins/jenkins:lts-jdk17
+    user: root
+    ports:
+      - "${JENKINS_PORT:-8080}:8080"
+      - "50000:50000"
+    volumes:
+      - jenkins_dev_data:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - dev_net
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.jenkins.rule=Host(`jenkins.localhost`)"
+      - "traefik.http.services.jenkins.loadbalancer.server.port=8080"
+
+  # ==========================================
+  # 4. BANCOS DE DADOS & CACHE (Portas Expostas para DBeaver / Compass)
+  # ==========================================
+  mongodb:
+    image: mongo:latest
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME:-root}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+    ports:
+      - "${MONGO_PORT:-27017}:27017"
+    volumes:
+      - mongo_dev_data:/data/db
+    networks:
+      - dev_net
+
+  redis:
+    image: redis:7-alpine
+    command: redis-server --requirepass ${REDIS_PASSWORD}
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_dev_data:/data
+    networks:
+      - dev_net
+
+  postvector:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:-app_db}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_dev_data:/var/lib/postgresql/data
+    networks:
+      - dev_net
+
+  # ==========================================
+  # 5. MESSAGING & STORAGE
+  # ==========================================
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER:-admin}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
+    ports:
+      - "${RABBITMQ_PORT:-5672}:5672"
+      - "${RABBITMQ_MANAGEMENT_PORT:-15672}:15672"
+    volumes:
+      - rabbitmq_dev_data:/var/lib/rabbitmq
+    networks:
+      - dev_net
+
+  minio:
+    image: minio/minio:latest
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    ports:
+      - "${MINIO_PORT:-9000}:9000"
+      - "${MINIO_CONSOLE_PORT:-9001}:9001"
+    volumes:
+      - minio_dev_data:/data
+    networks:
+      - dev_net
+
+  # ==========================================
+  # 6. AUTOMAÇÃO DE WORKFLOWS (n8n DEV)
+  # ==========================================
+  n8n:
+    image: n8nio/n8n:latest
+    environment:
+      - N8N_ENCRYPTION_KEY=${N8N_ENCRYPTION_KEY}
+      - N8N_PORT=5678
+    ports:
+      - "${N8N_PORT:-5678}:5678"
+    volumes:
+      - n8n_dev_data:/home/node/.n8n
+    networks:
+      - dev_net
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.n8n.rule=Host(`n8n.localhost`)"
+      - "traefik.http.services.n8n.loadbalancer.server.port=5678"
+
+  # ==========================================
+  # 7. AUTOMATION & TESTES E2E (Chromium Headless)
+  # ==========================================
+  chromium-automation:
+    image: zenika/alpine-chrome:latest
+    command: [
+      "--no-sandbox",
+      "--disable-gpu",
+      "--remote-debugging-address=0.0.0.0",
+      "--remote-debugging-port=9222"
+    ]
+    ports:
+      - "9222:9222"
+    networks:
+      - dev_net
+
+networks:
+  dev_net:
+    driver: bridge
+
+volumes:
+  portainer_dev_data:
+  jenkins_dev_data:
+  mongo_dev_data:
+  redis_dev_data:
+  postgres_dev_data:
+  rabbitmq_dev_data:
+  minio_dev_data:
+  n8n_dev_data:

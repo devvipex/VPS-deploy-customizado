@@ -1,0 +1,11 @@
+{
+  "name": "qa-test-automation-pipeline",
+  "version": "1.0.0",
+  "description": "Pipeline de testes automatizados E2E utilizando Chromium na VPS.",
+  "scripts": {
+    "test": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.40.0"
+  }
+}

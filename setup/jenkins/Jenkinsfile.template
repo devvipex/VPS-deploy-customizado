@@ -1,0 +1,77 @@
+pipeline {
+    agent any
+
+    environment {
+        APP_NAME = 'api-nestjs'
+        IMAGE_TAG = "${env.BUILD_NUMBER}"
+        ENV_FILE_PATH = "/opt/vps-deploy/setup/env/apps/${APP_NAME}.env"
+        ENV_EXAMPLE_PATH = "/opt/vps-deploy/setup/env/apps/${APP_NAME}.env.example"
+        SETUP_SCRIPT_PATH = "/opt/vps-deploy/setup/scripts/manage-env.js"
+    }
+
+    stages {
+        stage('1. Checkout Código') {
+            steps {
+                echo "📥 Clonando repositório da aplicação: ${APP_NAME}"
+                checkout scm
+            }
+        }
+
+        stage('2. Gerar & Injetar Variáveis (.env)') {
+            steps {
+                script {
+                    echo "🔑 Verificando e gerando senhas/segredos para: ${ENV_FILE_PATH}"
+                    
+                    // Executa o script de automação de senhas com backup nativo para o projeto específico
+                    sh "node ${SETUP_SCRIPT_PATH} ${ENV_FILE_PATH} ${ENV_EXAMPLE_PATH}"
+                    
+                    // Copia o .env verificado e preenchido para a workspace do build
+                    sh "cp ${ENV_FILE_PATH} .env"
+                    echo "✅ Arquivo .env injetado com sucesso no build!"
+                }
+            }
+        }
+
+        stage('3. Build da Imagem Docker') {
+            steps {
+                echo "🐳 Efetuando build da imagem Docker localmente..."
+                sh "docker build -t ${APP_NAME}:${IMAGE_TAG} -t ${APP_NAME}:latest ."
+            }
+        }
+
+        stage('4. Deploy / Atualização no Swarm') {
+            steps {
+                echo "🚀 Atualizando serviço no Docker Swarm..."
+                sh """
+                    docker service update --image ${APP_NAME}:${IMAGE_TAG} ${APP_NAME}_service || \
+                    docker compose -f docker-compose.yml up -d --build
+                """
+            }
+        }
+
+        stage('5. Execução de Testes E2E (QA Pipeline)') {
+            steps {
+                script {
+                    if (fileExists('apps/qa-test-automation-pipeline/package.json')) {
+                        echo "🧪 Executando testes automatizados Headless com Chromium..."
+                        sh "npm --prefix apps/qa-test-automation-pipeline test || true"
+                    }
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            echo "🧹 [Limpeza Automática] Removendo imagens antigas e sem tag (dangling)..."
+            // Remove imagens órfãs (dangling) geradas pelo build para economizar disco na VPS
+            sh "docker image prune -f --filter 'until=24h'"
+        }
+        success {
+            echo "✅ Build e Deploy do ${APP_NAME} realizados com sucesso!"
+        }
+        failure {
+            echo "❌ Erro durante o processo de Build/Deploy do ${APP_NAME}."
+        }
+    }
+}

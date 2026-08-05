@@ -1,0 +1,23 @@
+{
+  "name": "vps-deploy-customizado",
+  "version": "1.0.0",
+  "description": "Boilerplate open-source para deploy rápido de infraestrutura e aplicações em VPS com Docker Swarm.",
+  "scripts": {
+    "setup": "node setup/scripts/manage-env.js",
+    "dev:infra": "docker compose -f setup/docker/docker-compose.dev.yml --env-file .env up -d",
+    "dev:infra:down": "docker compose -f setup/docker/docker-compose.dev.yml down",
+    "deploy:infra": "docker network create --driver overlay public_net || true && docker stack deploy -c setup/docker/docker-stack.yml infra"
+  },
+  "keywords": [
+    "docker-swarm",
+    "vps",
+    "traefik",
+    "portainer",
+    "jenkins",
+    "nestjs",
+    "vite",
+    "pwa"
+  ],
+  "author": "",
+  "license": "MIT"
+}
