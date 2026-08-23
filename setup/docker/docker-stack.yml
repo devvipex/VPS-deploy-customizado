@@ -212,12 +212,16 @@ services:
     image: ${EVOGO_IMAGE:-evoapicloud/evolution-go:latest}
     environment:
       - SERVER_PORT=${EVOGO_PORT:-8080}
+      - CLIENT_NAME=${CLIENT_NAME:-evolution}
+      - GLOBAL_API_KEY=${EVOGO_API_KEY}
       - AUTHENTICATION_API_KEY=${EVOGO_API_KEY}
-      - DATABASE_ENABLED=true
-      - DATABASE_PROVIDER=postgresql
-      - DATABASE_CONNECTION_URI=postgresql://${POSTGRES_STD_USER:-postgres}:${POSTGRES_STD_PASSWORD}@postgres:5432/${POSTGRES_STD_DB:-evoc_db}?schema=public
+      - POSTGRES_AUTH_DB=postgresql://${POSTGRES_STD_USER:-postgres}:${POSTGRES_STD_PASSWORD}@postgres:5432/${POSTGRES_STD_DB:-evoc_db}?sslmode=disable
+      - POSTGRES_USERS_DB=postgresql://${POSTGRES_STD_USER:-postgres}:${POSTGRES_STD_PASSWORD}@postgres:5432/${POSTGRES_STD_DB:-evoc_db}?sslmode=disable
       - REDIS_ENABLED=true
       - REDIS_URI=redis://:${REDIS_PASSWORD}@redis:6379/0
+      - DATABASE_SAVE_MESSAGES=false
+      - WADEBUG=INFO
+      - LOGTYPE=console
     volumes:
       - evogo_data:/app/data
     networks:
