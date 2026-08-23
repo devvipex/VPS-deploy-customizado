@@ -274,6 +274,7 @@ services:
     image: evoapicloud/evo-ai-crm-community:latest
     environment:
       - PORT=3000
+      - SECRET_KEY_BASE=${EVOCCRM_SECRET_KEY:-v161kLsxexbd966WpNzGjhdqjmIroDwL}
       - DATABASE_URL=postgresql://${POSTGRES_STD_USER:-postgres}:${POSTGRES_STD_PASSWORD}@postgres:5432/${POSTGRES_STD_DB:-evoc_db}?schema=public
       - BACKEND_URL=https://crm.${DOMAIN_NAME:-localhost}
     networks:
