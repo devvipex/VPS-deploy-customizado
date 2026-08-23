@@ -245,7 +245,10 @@ services:
   evoccrm:
     image: ${EVOCCRM_IMAGE:-evoapicloud/evo-ai-frontend-community:latest}
     environment:
-      - PORT=5173
+      - PORT=80
+      - VITE_AUTH_API_URL=https://crm.${DOMAIN_NAME:-localhost}
+      - VITE_API_URL=https://crm.${DOMAIN_NAME:-localhost}
+      - VITE_CRM_API_URL=https://crm.${DOMAIN_NAME:-localhost}
       - NEXT_PUBLIC_API_URL=https://crm.${DOMAIN_NAME:-localhost}
     networks:
       - public_net
@@ -284,7 +287,7 @@ services:
     deploy:
       labels:
         - "traefik.enable=true"
-        - "traefik.http.routers.evo-crm-core.rule=Host(`crm.${DOMAIN_NAME:-localhost}`) && (PathPrefix(`/login`) || PathPrefix(`/refresh`) || PathPrefix(`/validate`) || PathPrefix(`/status`) || PathPrefix(`/global_config`) || PathPrefix(`/logout`) || PathPrefix(`/api`) || PathPrefix(`/auth`) || PathPrefix(`/v1`) || PathPrefix(`/cable`) || PathPrefix(`/rails`) || PathPrefix(`/socket.io`))"
+        - "traefik.http.routers.evo-crm-core.rule=Host(`crm.${DOMAIN_NAME:-localhost}`) && (PathPrefix(`/VITE_AUTH_API_URL_PLACEHOLDER`) || PathPrefix(`/VITE_API_URL_PLACEHOLDER`) || PathPrefix(`/login`) || PathPrefix(`/refresh`) || PathPrefix(`/validate`) || PathPrefix(`/status`) || PathPrefix(`/global_config`) || PathPrefix(`/logout`) || PathPrefix(`/api`) || PathPrefix(`/auth`) || PathPrefix(`/v1`) || PathPrefix(`/cable`) || PathPrefix(`/rails`) || PathPrefix(`/socket.io`))"
         - "traefik.http.routers.evo-crm-core.priority=100"
         - "traefik.http.routers.evo-crm-core.entrypoints=web,websecure"
         - "traefik.http.routers.evo-crm-core.tls=true"
