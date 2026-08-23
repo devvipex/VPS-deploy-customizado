@@ -14,19 +14,12 @@ Portainer CE does not support building Docker images directly from Git repositor
 
 ## 🔑 Dynamic `.env` Generation & Injection
 
-Each client project maintains its environment configuration template in:
-
-```text
-setup/env/apps/
-├── api-nestjs.env
-├── api-nestjs-payment-service.env
-└── web-vite.env
-```
+Each client project maintains its environment configuration in `.env` (generated automatically from `.env.example`).
 
 During the build pipeline execution, Jenkins runs:
 
 ```groovy
-sh "node /opt/vps-deploy/setup/scripts/manage-env.js /opt/vps-deploy/setup/env/apps/${APP_NAME}.env /opt/vps-deploy/setup/env/apps/${APP_NAME}.env.example"
+sh "node /opt/vps-deploy/setup/scripts/manage-env.js /opt/vps-deploy/.env /opt/vps-deploy/.env.example"
 ```
 
 1. **Populates empty application secrets** (such as `JWT_SECRET`, `DB_PASSWORD`, `API_KEY`).

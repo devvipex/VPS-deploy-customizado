@@ -9,13 +9,13 @@ Este guia explica como o Jenkins lê, **gera senhas seguras automaticamente (se 
 Quando o Jenkins inicia o build de qualquer repositório, o estágio `2. Gerar & Injetar Variáveis (.env)` do **`Jenkinsfile`** executa o script de automação:
 
 ```bash
-node /opt/vps-deploy/setup/scripts/manage-env.js /opt/vps-deploy/setup/env/apps/<NOME_APP>.env /opt/vps-deploy/setup/env/apps/<NOME_APP>.env.example
+node /opt/vps-deploy/setup/scripts/manage-env.js /opt/vps-deploy/.env /opt/vps-deploy/.env.example
 ```
 
 ### O fluxo automático:
-1. **Se o `.env` do aplicativo ainda não existir:** Ele cria a partir do arquivo `.env.example` do projeto.
+1. **Se o `.env` ainda não existir:** Ele cria a partir do arquivo `.env.example`.
 2. **Geração Automática de Segredos:** Qualquer variável vazia referente a senhas ou chaves (`JWT_SECRET`, `API_KEY`, `DB_PASSWORD`, `TOKEN`, etc.) é preenchida com um valor aleatório de alta segurança de 24 a 32 caracteres.
-3. **Backup Automático:** Se as senhas já existiam e foram modificadas, um arquivo `env_bkp_<NOME_APP>_YYYY-MM-DD_UUID.env` é gerado automaticamente na pasta `setup/backups/`.
+3. **Backup Automático:** Se as senhas já existiam e foram modificadas, um arquivo de backup limpo `env_YYYY-MM-DD_HHMMSS.env` é gerado automaticamente na pasta `setup/backups/`.
 4. **Cópia para o Build:** O arquivo verificado e seguro é copiado como `.env` no diretório do projeto antes do `docker build`.
 
 ---

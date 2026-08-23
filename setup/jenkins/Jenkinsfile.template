@@ -2,10 +2,10 @@ pipeline {
     agent any
 
     environment {
-        APP_NAME = 'api-nestjs'
+        APP_NAME = 'app-custom'
         IMAGE_TAG = "${env.BUILD_NUMBER}"
-        ENV_FILE_PATH = "/opt/vps-deploy/setup/env/apps/${APP_NAME}.env"
-        ENV_EXAMPLE_PATH = "/opt/vps-deploy/setup/env/apps/${APP_NAME}.env.example"
+        ENV_FILE_PATH = "/opt/vps-deploy/.env"
+        ENV_EXAMPLE_PATH = "/opt/vps-deploy/.env.example"
         SETUP_SCRIPT_PATH = "/opt/vps-deploy/setup/scripts/manage-env.js"
     }
 
