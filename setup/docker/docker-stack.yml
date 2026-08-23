@@ -239,16 +239,10 @@ services:
         - "traefik.docker.network=public_net"
 
   evoccrm:
-    image: ${EVOCCRM_IMAGE:-evoapicloud/evolution-api:latest}
+    image: ${EVOCCRM_IMAGE:-evoapicloud/evo-ai-frontend-community:latest}
     environment:
-      - SERVER_PORT=${EVOCCRM_PORT:-3000}
-      - PORT=${EVOCCRM_PORT:-3000}
-      - SECRET_KEY=${EVOCCRM_SECRET_KEY}
-      - DATABASE_URL=postgresql://${POSTGRES_STD_USER:-postgres}:${POSTGRES_STD_PASSWORD}@postgres:5432/${POSTGRES_STD_DB:-evoc_db}?schema=public
-      - REDIS_URL=redis://:${REDIS_PASSWORD}@redis:6379/1
-      - EVOGO_API_URL=http://evogo:8080
-    volumes:
-      - evoccrm_data:/app/data
+      - PORT=5173
+      - NEXT_PUBLIC_API_URL=https://crm-api.${DOMAIN_NAME:-localhost}
     networks:
       - public_net
       - internal_net
@@ -264,8 +258,87 @@ services:
         - "traefik.http.routers.evoccrm.entrypoints=web,websecure"
         - "traefik.http.routers.evoccrm.tls=true"
         - "traefik.http.routers.evoccrm.tls.certresolver=letsencryptresolver"
-        - "traefik.http.services.evoccrm.loadbalancer.server.port=3000"
+        - "traefik.http.services.evoccrm.loadbalancer.server.port=5173"
         - "traefik.docker.network=public_net"
+
+  # Evo CRM Core API
+  evo-crm-core:
+    image: evoapicloud/evo-ai-crm-community:latest
+    environment:
+      - PORT=3000
+      - DATABASE_URL=postgresql://${POSTGRES_STD_USER:-postgres}:${POSTGRES_STD_PASSWORD}@postgres:5432/${POSTGRES_STD_DB:-evoc_db}?schema=public
+      - BACKEND_URL=https://crm-api.${DOMAIN_NAME:-localhost}
+    networks:
+      - public_net
+      - internal_net
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
+    deploy:
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.evo-crm-core.rule=Host(`crm-api.${DOMAIN_NAME:-localhost}`)"
+        - "traefik.http.routers.evo-crm-core.entrypoints=web,websecure"
+        - "traefik.http.routers.evo-crm-core.tls=true"
+        - "traefik.http.routers.evo-crm-core.tls.certresolver=letsencryptresolver"
+        - "traefik.http.services.evo-crm-core.loadbalancer.server.port=3000"
+        - "traefik.docker.network=public_net"
+
+  # Evo Auth Service
+  evo-auth:
+    image: evoapicloud/evo-auth-service-community:latest
+    environment:
+      - PORT=3001
+      - DATABASE_URL=postgresql://${POSTGRES_STD_USER:-postgres}:${POSTGRES_STD_PASSWORD}@postgres:5432/${POSTGRES_STD_DB:-evoc_db}?schema=public
+      - JWT_SECRET=${EVOCCRM_SECRET_KEY:-jwt_secret_super_seguro}
+    networks:
+      - internal_net
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
+
+  # Evo AI Processor
+  evo-ai-processor:
+    image: evoapicloud/evo-ai-processor-community:latest
+    environment:
+      - PORT=8000
+    networks:
+      - internal_net
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
+
+  # Evo Agent Core
+  evo-agent-core:
+    image: evoapicloud/evo-ai-core-service-community:latest
+    environment:
+      - PORT=5555
+    networks:
+      - internal_net
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
+
+  # Evo Bot Runtime
+  evo-bot-runtime:
+    image: evoapicloud/evo-bot-runtime:latest
+    environment:
+      - PORT=8080
+    networks:
+      - internal_net
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
 
   # ==========================================
   # 7. AUTOMAÇÃO DE WORKFLOWS (n8n)

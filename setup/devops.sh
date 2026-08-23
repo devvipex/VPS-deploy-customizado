@@ -38,6 +38,11 @@ ALL_SERVICES=(
     "minio"
     "evogo"
     "evoccrm"
+    "evo-crm-core"
+    "evo-auth"
+    "evo-ai-processor"
+    "evo-agent-core"
+    "evo-bot-runtime"
     "n8n"
     "chromium-automation"
 )
