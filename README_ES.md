@@ -16,23 +16,27 @@ Un boilerplate open-source listo para producción diseñado para acelerar drást
    git clone https://github.com/user/vps-deploy-customizado.git
    cd vps-deploy-customizado
    ```
-2. **Configuración Automatizada de Contraseñas y Entorno:**
+2. **CLI Maestra DevOps y Configuración de Entorno:**
    ```bash
-   npm run setup
+   npm run devops
+   # o npm run setup
    ```
-   *Genera automáticamente contraseñas seguras de 24 a 32 caracteres para todos los servicios en el archivo `.env` y crea respaldos con fecha y UUID (`env_bkp_YYYY-MM-DD_UUID.env`) si las credenciales ya existen.*
+   *Inicia la central única de control (`setup/devops.sh`) para despliegue selectivo de servicios, respaldos automáticos, generación de claves seguras y hardening de seguridad de la VPS.*
 
 3. **Modos de Ejecución:**
+   * **Central Maestra de Gestión DevOps:**
+     ```bash
+     bash setup/devops.sh
+     ```
+     *Consolida en una única CLI el despliegue selectivo, logs en vivo, rutinas de respaldo y restauración, limpieza de Docker y reglas de firewall UFW.*
    * **Desarrollo (Local):**
      ```bash
      npm run dev:infra
      ```
-     *Levanta todos los servicios con puertos expuestos en `localhost` mediante Docker Compose para depuración sencilla.*
+     *Levanta los servicios seleccionados con puertos expuestos en `localhost` mediante Docker Compose para depuración sencilla.*
    * **Producción (VPS Segura / Hardened):**
      ```bash
-     sudo ./setup/security/harden-vps.sh
-     ./setup/init.sh
-     npm run deploy:infra
+     bash setup/devops.sh deploy
      ```
      *Aplica reglas de firewall UFW y Fail2ban, inicializa Docker Swarm y emite certificados SSL automáticos de Let's Encrypt mediante Traefik.*
 
@@ -43,9 +47,9 @@ Un boilerplate open-source listo para producción diseñado para acelerar drást
 * **Proxy Inverso y SSL:** Traefik v2 (Redirección automática de HTTP a HTTPS + resolver Let's Encrypt ACME)
 * **Gestión de Contenedores:** Portainer CE
 * **Pipeline de CI/CD:** Jenkins LTS (Compilación local de imágenes sin requerir Docker Registry externo)
-* **Bases de Datos y Caché:** MongoDB, Redis, Postvector (PostgreSQL 16 + extensión `pgvector`)
+* **Bases de Datos y Caché:** MongoDB, Redis, Postvector (PostgreSQL 16 + `pgvector`) y PostgreSQL Estándar (Postgres 16 oficial)
 * **Mensajería y Almacenamiento S3:** RabbitMQ (con Plugin de Gestión), MinIO (Compatible con S3)
-* **Automatización de Flujos:** n8n
+* **Automatización y CRM:** n8n (conectado a Postgres Estándar), Evogo (Evolution API Go) y Evoccrm (Evolution CRM)
 * **Automatización de QA:** Contenedor Chromium Headless (Puerto de depuración remota `9222`)
 
 ---

@@ -11,7 +11,7 @@ Seja bem-vindo à central de documentação da **Base VPS Deploy & MVP Multi-App
 
 ### 2. 🌐 Infraestrutura & DevOps (`docs/infrastructure/`)
 * 📐 **[Arquitetura Geral & Roteamento Traefik](./infrastructure/architecture.md)** — Roteamento Traefik, portas expostas em DEV vs PROD e SSL Let's Encrypt.
-* 🔒 **[Segurança & Backup de Senhas](./infrastructure/security-passwords.md)** — Firewall UFW, proteção Fail2ban e política de backups de `.env` com UUID.
+* 🔒 **[Segurança, Backup & CLI Mestre DevOps](./infrastructure/security-passwords.md)** — Central Única de Gestão (`setup/devops.sh`), Firewall UFW, proteção Fail2ban e política de backups de `.env`.
 
 ### 3. 🏗️ CI/CD & Deploy (`docs/cicd/`)
 * 🏗️ **[Guia do Jenkins & Pipeline](./cicd/jenkins-guide.md)** — Configuração de jobs, injeção dinâmica de `.env` e remoção automática de imagens Docker órfãs.

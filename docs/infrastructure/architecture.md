@@ -47,8 +47,11 @@ npm run dev:infra
 * **MongoDB:** `localhost:27017`
 * **Redis:** `localhost:6379`
 * **Postvector (PostgreSQL + pgvector):** `localhost:5432`
+* **PostgreSQL Standard (Unmodified Postgres):** `localhost:5433`
 * **RabbitMQ:** `localhost:5672` (Management: `localhost:15672`)
 * **MinIO:** `localhost:9000` (Console: `localhost:9001`)
+* **Evogo (Evolution API Go):** `http://localhost:8080`
+* **Evoccrm (Evolution CRM):** `http://localhost:3000`
 * **n8n:** `http://localhost:5678`
 * **Chromium Remote Debug:** `localhost:9222`
 
@@ -56,19 +59,20 @@ npm run dev:infra
 
 ## 🚀 2. Production Environment (PROD / VPS)
 
-On the client's VPS, the stack runs on **Docker Swarm** with automatic SSL termination via **Let's Encrypt** (`letsencryptresolver`).
+On the client's VPS, the stack runs on **Docker Swarm** managed via the master CLI `setup/devops.sh` with automatic SSL termination via **Let's Encrypt** (`letsencryptresolver`).
 
 ```bash
 # On the VPS
-sudo ./setup/security/harden-vps.sh
-./setup/init.sh
-npm run deploy:infra
+bash setup/devops.sh
 ```
 
 ### 🔒 SSL Certificates & Traefik Ingress Routes
 Traefik handles HTTP to HTTPS redirection and SSL renewal dynamically:
 * `https://portainer.<DOMAIN_NAME>`
 * `https://jenkins.<DOMAIN_NAME>`
+* `https://minio.<DOMAIN_NAME>`
+* `https://evogo.<DOMAIN_NAME>`
+* `https://crm.<DOMAIN_NAME>`
 * `https://n8n.<DOMAIN_NAME>`
 * `https://api.<DOMAIN_NAME>`
 * `https://<DOMAIN_NAME>`

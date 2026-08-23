@@ -16,25 +16,29 @@ An open-source, production-ready boilerplate designed to dramatically accelerate
    git clone https://github.com/user/vps-deploy-customizado.git
    cd vps-deploy-customizado
    ```
-2. **Automated Password & Environment Setup:**
+2. **Master DevOps CLI & Environment Setup:**
    ```bash
-   npm run setup
+   npm run devops
+   # or npm run setup
    ```
-   *Automatically generates cryptographically secure 24–32 character secrets for all database/messaging services in `.env` and creates timestamped UUID backups (`env_bkp_YYYY-MM-DD_UUID.env`) if credentials already exist.*
+   *Launches the unified master CLI (`setup/devops.sh`) for selective service deployment, database backups, key generation, and VPS security hardening.*
 
 3. **Execution Modes:**
-   * **Development (Local):**
+   * **Unified DevOps Master Management CLI:**
+     ```bash
+     bash setup/devops.sh
+     ```
+     *Consolidates interactive service deployment, real-time logs, backup/restore routines, Docker system cleanup, and UFW firewall hardening into a single CLI.*
+   * **Development Mode (Local):**
      ```bash
      npm run dev:infra
      ```
-     *Spins up all services with exposed ports on `localhost` via Docker Compose for easy debugging.*
-   * **Production (VPS Hardened):**
+     *Spins up selected services with exposed ports on `localhost` via Docker Compose for easy debugging.*
+   * **Production Mode (VPS Hardened):**
      ```bash
-     sudo ./setup/security/harden-vps.sh
-     ./setup/init.sh
-     npm run deploy:infra
+     bash setup/devops.sh deploy
      ```
-     *Applies UFW/Fail2ban security rules, initializes Docker Swarm, and issues automatic Let's Encrypt SSL certificates via Traefik.*
+     *Initializes Docker Swarm, applies UFW/Fail2ban hardening rules, and issues automatic Let's Encrypt SSL certificates via Traefik.*
 
 ---
 
@@ -43,9 +47,9 @@ An open-source, production-ready boilerplate designed to dramatically accelerate
 * **Reverse Proxy & SSL:** Traefik v2 (Automatic HTTP to HTTPS redirect + Let's Encrypt ACME resolver)
 * **Container Management:** Portainer CE
 * **CI/CD Pipeline:** Jenkins LTS (Internal local image builds without requiring external Docker Registries)
-* **Databases & Caching:** MongoDB, Redis, Postvector (PostgreSQL 16 + `pgvector` extension)
+* **Databases & Caching:** MongoDB, Redis, Postvector (PostgreSQL 16 + `pgvector`), PostgreSQL Standard (Unmodified Postgres 16)
 * **Messaging & Object Storage:** RabbitMQ (with Management Plugin), MinIO (S3-compatible)
-* **Workflow Automation:** n8n
+* **Workflow Automation & CRM:** n8n (connected to Postgres Standard), Evogo (Evolution API Go), Evoccrm (Evolution CRM)
 * **QA & Test Automation:** Headless Chromium service (Remote Debugging Port `9222`)
 
 ---

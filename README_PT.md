@@ -16,23 +16,27 @@ Um boilerplate open-source pronto para produção projetado para acelerar drasti
    git clone https://github.com/user/vps-deploy-customizado.git
    cd vps-deploy-customizado
    ```
-2. **Setup de Senhas e Ambiente Automatizado:**
+2. **CLI Mestre DevOps & Setup de Ambiente:**
    ```bash
-   npm run setup
+   npm run devops
+   # ou npm run setup
    ```
-   *Gera automaticamente senhas seguras de 24 a 32 caracteres para todos os serviços no arquivo `.env` e cria backups com timestamp e UUID (`env_bkp_YYYY-MM-DD_UUID.env`) se já existirem credenciais.*
+   *Inicia a central única de controle (`setup/devops.sh`) para deploy seletivo de serviços, backups automáticos de bancos, geração de chaves seguras e hardening de segurança da VPS.*
 
 3. **Modos de Execução:**
+   * **Central Mestre de Gestão DevOps:**
+     ```bash
+     bash setup/devops.sh
+     ```
+     *Consolida em uma única CLI o deploy seletivo, logs ao vivo, rotinas de backup e restauração, limpeza do Docker e regras de firewall UFW.*
    * **Desenvolvimento (Local):**
      ```bash
      npm run dev:infra
      ```
-     *Sobe todos os serviços com portas expostas no `localhost` via Docker Compose para fácil depuração.*
+     *Sobe os serviços selecionados com portas expostas no `localhost` via Docker Compose para fácil depuração.*
    * **Produção (VPS Segura / Hardened):**
      ```bash
-     sudo ./setup/security/harden-vps.sh
-     ./setup/init.sh
-     npm run deploy:infra
+     bash setup/devops.sh deploy
      ```
      *Aplica regras de firewall UFW e Fail2ban, inicializa o Docker Swarm e emite certificados SSL automáticos do Let's Encrypt via Traefik.*
 
@@ -43,9 +47,9 @@ Um boilerplate open-source pronto para produção projetado para acelerar drasti
 * **Proxy Reverso & SSL:** Traefik v2 (Redirecionamento automático HTTP para HTTPS + resolver Let's Encrypt ACME)
 * **Gestão de Containers:** Portainer CE
 * **Pipeline de CI/CD:** Jenkins LTS (Builds locais de imagens sem depender de Docker Registry externo)
-* **Bancos de Dados & Cache:** MongoDB, Redis, Postvector (PostgreSQL 16 + extensão `pgvector`)
+* **Bancos de Dados & Cache:** MongoDB, Redis, Postvector (PostgreSQL 16 + `pgvector`) e PostgreSQL Padrão (Postgres 16 oficial)
 * **Mensageria & Armazenamento S3:** RabbitMQ (com Plugin de Gestão), MinIO (Compatível com S3)
-* **Automação de Workflows:** n8n
+* **Automação & CRM:** n8n (conectado ao Postgres Padrão), Evogo (Evolution API Go) e Evoccrm (Evolution CRM)
 * **Automação de QA:** Container Chromium Headless (Porta de Remote Debugging `9222`)
 
 ---

@@ -19,7 +19,7 @@ Welcome to the **VPS Deploy & Base MVP Stack** documentation hub.
 
 ### 2. 🌐 Infrastructure & DevOps (`docs/infrastructure/`)
 * 📐 **[Architecture & Traefik Routing](./infrastructure/architecture.md)** — Traefik ingress, exposed DEV vs PROD ports, Let's Encrypt SSL.
-* 🔒 **[Security & VPS Hardening](./infrastructure/security-passwords.md)** — Firewall rules (UFW), Fail2ban brute-force protection, and `.env` UUID backup policy.
+* 🔒 **[Security, Backup & Master DevOps CLI](./infrastructure/security-passwords.md)** — Unified Master DevOps CLI (`setup/devops.sh`), UFW firewall rules, Fail2ban brute-force protection, and `.env` UUID backup policy.
 
 ### 3. 🏗️ CI/CD & Deployment (`docs/cicd/`)
 * 🏗️ **[Jenkins Guide & Pipeline](./cicd/jenkins-guide.md)** — Setting up jobs, dynamic `.env` injection, and automatic Docker image pruning.
