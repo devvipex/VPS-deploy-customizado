@@ -5,9 +5,10 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 STACK_FILE="${ROOT_DIR}/setup/docker/docker-stack.yml"
 DEV_FILE="${ROOT_DIR}/setup/docker/docker-compose.dev.yml"
 BACKUP_DIR="${ROOT_DIR}/setup/backups"
+LOGS_DIR="${ROOT_DIR}/setup/logs"
 ENV_FILE="${ROOT_DIR}/.env"
 
-mkdir -p "${BACKUP_DIR}"
+mkdir -p "${BACKUP_DIR}" "${LOGS_DIR}"
 
 # Função para carregar variáveis do .env
 load_env() {
@@ -128,6 +129,9 @@ menu_deploy() {
         fi
         echo "✅ Deploy no Docker Swarm concluído!"
     fi
+
+    # Exibir credenciais na tela após o deploy para fácil consulta do DevOps
+    show_credentials
 }
 
 menu_stop() {
@@ -297,16 +301,33 @@ menu_security() {
 # ----------------------------------------------------
 # 5. MANUTENÇÃO & LIMPEZA DOCKER
 # ----------------------------------------------------
+inspect_volumes() {
+    echo ""
+    echo "🔍 [DevOps] INSPEÇÃO DE VOLUMES DOCKER"
+    echo "======================================================"
+    echo "📦 VOLUMES EXISTENTES DO PROJETO (infra_*):"
+    docker volume ls --filter name=infra_ 2>/dev/null || echo "Nenhum volume 'infra_' encontrado."
+    echo ""
+    echo "📦 TODOS OS VOLUMES NO SISTEMA:"
+    docker volume ls
+    echo "======================================================"
+    read -p "Digite o nome de um volume para ver detalhes ou dê Enter para voltar: " VOL_NAME
+    if [ -n "$VOL_NAME" ]; then
+        docker volume inspect "$VOL_NAME" 2>/dev/null || echo "❌ Volume '$VOL_NAME' não encontrado."
+    fi
+}
+
 menu_maintenance() {
     echo ""
     echo "🧹 [DevOps] MANUTENÇÃO & LIMPEZA DOCKER"
     echo "------------------------------------------------------"
     echo "1) Diagnóstico de Uso de Disco (df -h & docker system df)"
-    echo "2) Executar Prune Padrão no Docker (Imagens e Caches)"
-    echo "3) 🔥 Hard Reset Profundo (Remover Stacks + Volumes Nomeados + Volume Prune)"
-    echo "4) Voltar"
+    echo "2) 🔍 Inspecionar e Verificar Volumes Existentes"
+    echo "3) Executar Prune Padrão no Docker (Imagens e Caches)"
+    echo "4) 🔥 Hard Reset Profundo (Remover Stacks + Volumes Nomeados + Volume Prune)"
+    echo "5) Voltar ao Menu Principal"
     echo "------------------------------------------------------"
-    read -p "Opção [1-4]: " MNT_OPT
+    read -p "Opção [1-5]: " MNT_OPT
     case $MNT_OPT in
         1)
             echo "💾 USO DE DISCO DO SISTEMA:"
@@ -316,6 +337,9 @@ menu_maintenance() {
             docker system df
             ;;
         2)
+            inspect_volumes
+            ;;
+        3)
             echo "⚠️ Esta ação irá remover containers parados, redes não utilizadas e imagens sem uso."
             read -p "Deseja continuar? (s/N): " CONFIRM
             if [[ "$CONFIRM" =~ ^[Ss]$ ]]; then
@@ -323,7 +347,7 @@ menu_maintenance() {
                 echo "✅ Limpeza do Docker executada com sucesso!"
             fi
             ;;
-        3)
+        4)
             echo "⚠️ ATENÇÃO: Esta ação irá parar a stack 'infra' e apagar TODOS os volumes nomeados do Docker (dados de bancos, certificados do Traefik, etc)."
             read -p "Tem certeza absoluta que deseja executar a LIMPEZA PROFUNDA DE VOLUMES? (digite DEEP-PURGE): " CONFIRM
             if [ "$CONFIRM" == "DEEP-PURGE" ]; then
@@ -343,29 +367,68 @@ menu_maintenance() {
 }
 
 # ----------------------------------------------------
-# 6. LOGS E DIAGNÓSTICO
+# 6. LOGS E RETENÇÃO DE HISTÓRICO
 # ----------------------------------------------------
 menu_logs() {
     local target_service="$1"
-    if [ -z "$target_service" ]; then
-        echo "Selecione o serviço para visualizar os logs ao vivo:"
-        for i in "${!ALL_SERVICES[@]}"; do
-            echo "  $((i+1))) ${ALL_SERVICES[$i]}"
-        done
-        read -p "Número do serviço: " NUM
-        idx=$((NUM-1))
-        target_service="${ALL_SERVICES[$idx]}"
-    fi
+    echo ""
+    echo "📜 [DevOps] LOGS E HISTÓRICO DE CONTAINERS"
+    echo "------------------------------------------------------"
+    echo "1) 📜 Acompanhar Logs em Tempo Real (tail -f)"
+    echo "2) 💾 Exportar e Salvar Histórico Completo de Logs (setup/logs/)"
+    echo "3) 📁 Listar Históricos de Logs Exportados"
+    echo "4) Voltar ao Menu Principal"
+    echo "------------------------------------------------------"
+    read -p "Opção [1-4]: " LOG_OPT
+    case $LOG_OPT in
+        1)
+            if [ -z "$target_service" ]; then
+                echo "Selecione o serviço para visualizar os logs ao vivo:"
+                for i in "${!ALL_SERVICES[@]}"; do
+                    echo "  $((i+1))) ${ALL_SERVICES[$i]}"
+                done
+                read -p "Número do serviço: " NUM
+                idx=$((NUM-1))
+                target_service="${ALL_SERVICES[$idx]}"
+            fi
 
-    if [ -n "$target_service" ]; then
-        echo "📜 Exibindo logs ao vivo de: $target_service (Ctrl+C para sair)..."
-        local cid=$(find_container "$target_service")
-        if [ -n "$cid" ]; then
-            docker logs -f --tail 100 "$cid"
-        else
-            docker service logs -f "infra_${target_service}" 2>/dev/null || echo "❌ Serviço/Container '$target_service' não encontrado rodando."
-        fi
-    fi
+            if [ -n "$target_service" ]; then
+                echo "📜 Exibindo logs ao vivo de: $target_service (Ctrl+C para sair)..."
+                local cid=$(find_container "$target_service")
+                if [ -n "$cid" ]; then
+                    docker logs -f --tail 100 "$cid"
+                else
+                    docker service logs -f "infra_${target_service}" 2>/dev/null || echo "❌ Serviço/Container '$target_service' não encontrado rodando."
+                fi
+            fi
+            ;;
+        2)
+            echo "Selecione o serviço para exportar o histórico de logs:"
+            for i in "${!ALL_SERVICES[@]}"; do
+                echo "  $((i+1))) ${ALL_SERVICES[$i]}"
+            done
+            read -p "Número do serviço: " NUM
+            idx=$((NUM-1))
+            target_service="${ALL_SERVICES[$idx]}"
+
+            if [ -n "$target_service" ]; then
+                local TS="$(date +'%Y-%m-%d_%H%M%S')"
+                local LOG_FILE="${LOGS_DIR}/${target_service}_${TS}.log"
+                echo "💾 Exportando histórico de logs de: $target_service -> setup/logs/${target_service}_${TS}.log"
+                local cid=$(find_container "$target_service")
+                if [ -n "$cid" ]; then
+                    docker logs --tail 2000 "$cid" > "$LOG_FILE" 2>&1
+                else
+                    docker service logs --tail 2000 "infra_${target_service}" > "$LOG_FILE" 2>&1 || true
+                fi
+                echo "✅ Histórico de logs exportado com sucesso para: setup/logs/${target_service}_${TS}.log"
+            fi
+            ;;
+        3)
+            echo "📁 Históricos de logs disponíveis em setup/logs/:"
+            ls -lh "${LOGS_DIR}" 2>/dev/null || echo "Nenhum histórico exportado até o momento."
+            ;;
+    esac
 }
 
 # ----------------------------------------------------

@@ -5,5 +5,8 @@ setup/CREDENTIALS.txt
 setup/backups/
 backups/
 
+setup/logs/
+logs/
+
 node_modules/
 

@@ -18,12 +18,15 @@ function generateUUID() {
     return crypto.randomUUID();
 }
 
-function getFormattedDate() {
+function getFormattedTimestamp() {
     const now = new Date();
     const year = now.getFullYear();
     const month = String(now.getMonth() + 1).padStart(2, '0');
     const day = String(now.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
+    const hours = String(now.getHours()).padStart(2, '0');
+    const mins = String(now.getMinutes()).padStart(2, '0');
+    const secs = String(now.getSeconds()).padStart(2, '0');
+    return `${year}-${month}-${day}_${hours}${mins}${secs}`;
 }
 
 function parseEnv(content) {
@@ -97,8 +100,8 @@ function main() {
     const hasExistingPasswords = Object.keys(currentEnv).some(key => isSecretKey(key) && currentEnv[key] && currentEnv[key].length > 0);
 
     if (!isNewFile && hasExistingPasswords) {
-        const targetFileName = path.basename(targetEnvPath, '.env');
-        const backupFileName = `env_bkp_${targetFileName}_${getFormattedDate()}_${generateUUID()}.env`;
+        const timestamp = getFormattedTimestamp();
+        const backupFileName = `env_${timestamp}.env`;
         const backupPath = path.join(BACKUP_DIR, backupFileName);
         fs.writeFileSync(backupPath, envContent, 'utf-8');
         console.log(`📦 Backup do .env existente salvo em: setup/backups/${backupFileName}`);
@@ -132,6 +135,7 @@ function main() {
     const finalEnv = parseEnv(fs.readFileSync(targetEnvPath, 'utf-8'));
     const credPath = path.join(ROOT_DIR, 'setup', 'CREDENTIALS.txt');
     const domain = finalEnv['DOMAIN_NAME'] || 'localhost';
+    const timestamp = getFormattedTimestamp();
 
     const credContent = `======================================================
      🔑 RESUMO DE CREDENCIAIS & ACESSOS DA INFRAESTRUTURA
@@ -139,7 +143,7 @@ function main() {
 Cliente           : ${finalEnv.CLIENT_NAME || 'n/a'}
 Domínio Principal : ${domain}
 E-mail SSL        : ${finalEnv.TRAEFIK_ACME_EMAIL || 'n/a'}
-Data da Atualização: ${getFormattedDate()}
+Data da Atualização: ${timestamp}
 
 --- [1. PROXY REVERSO & GESTÃO] ---
 Traefik Dashboard : http://localhost:8082
@@ -168,7 +172,7 @@ Evoccrm (CRM)     : https://crm.${domain} | Secret=${finalEnv.EVOCCRM_SECRET_KEY
 `;
 
     fs.writeFileSync(credPath, credContent, 'utf-8');
-    const bkpCredPath = path.join(BACKUP_DIR, `credentials_${getFormattedDate()}.txt`);
+    const bkpCredPath = path.join(BACKUP_DIR, `credentials_${timestamp}.txt`);
     fs.writeFileSync(bkpCredPath, credContent, 'utf-8');
 
     if (generatedCount > 0) {

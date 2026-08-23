@@ -29,6 +29,11 @@ services:
       - traefik_certificates:/letsencrypt
     networks:
       - public_net
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
 
   # ==========================================
   # 2. GESTÃO DE CONTAINERS (Portainer)
@@ -41,6 +46,11 @@ services:
       - portainer_data:/data
     networks:
       - public_net
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
     deploy:
       labels:
         - "traefik.enable=true"
@@ -66,6 +76,11 @@ services:
     networks:
       - public_net
       - internal_net
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
     deploy:
       labels:
         - "traefik.enable=true"
@@ -90,6 +105,11 @@ services:
       - mongo_data:/data/db
     networks:
       - internal_net
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
 
   redis:
     image: redis:7-alpine
@@ -98,6 +118,11 @@ services:
       - redis_data:/data
     networks:
       - internal_net
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
 
   postvector:
     image: pgvector/pgvector:pg16
@@ -109,6 +134,11 @@ services:
       - postgres_data:/var/lib/postgresql/data
     networks:
       - internal_net
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
 
   postgres:
     image: postgres:16-alpine
@@ -120,6 +150,11 @@ services:
       - postgres_std_data:/var/lib/postgresql/data
     networks:
       - internal_net
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
 
   # ==========================================
   # 5. MESSAGING & STORAGE
@@ -136,6 +171,11 @@ services:
     networks:
       - internal_net
       - public_net
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
 
   minio:
     image: minio/minio:latest
@@ -151,6 +191,11 @@ services:
     networks:
       - public_net
       - internal_net
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
     deploy:
       labels:
         - "traefik.enable=true"
@@ -179,6 +224,11 @@ services:
     networks:
       - public_net
       - internal_net
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
     deploy:
       labels:
         - "traefik.enable=true"
@@ -202,6 +252,11 @@ services:
     networks:
       - public_net
       - internal_net
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
     deploy:
       labels:
         - "traefik.enable=true"
@@ -241,6 +296,11 @@ services:
     networks:
       - public_net
       - internal_net
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
     deploy:
       labels:
         - "traefik.enable=true"
@@ -266,6 +326,11 @@ services:
       - "9222:9222"
     networks:
       - internal_net
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
 
 networks:
   public_net:
