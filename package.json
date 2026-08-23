@@ -3,7 +3,10 @@
   "version": "1.0.0",
   "description": "Boilerplate open-source para deploy rápido de infraestrutura e aplicações em VPS com Docker Swarm.",
   "scripts": {
-    "setup": "node setup/scripts/manage-env.js",
+    "devops": "bash setup/devops.sh",
+    "menu": "bash setup/devops.sh deploy",
+    "backup": "bash setup/devops.sh backup",
+    "setup": "bash setup/devops.sh env",
     "dev:infra": "docker compose -f setup/docker/docker-compose.dev.yml --env-file .env up -d",
     "dev:infra:down": "docker compose -f setup/docker/docker-compose.dev.yml down",
     "deploy:infra": "docker network create --driver overlay public_net || true && docker stack deploy -c setup/docker/docker-stack.yml infra"
