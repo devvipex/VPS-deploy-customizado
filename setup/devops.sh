@@ -127,23 +127,36 @@ menu_deploy() {
             local SELECTED_STACK_FILE="${ROOT_DIR}/setup/docker/docker-stack.selected.yml"
             node -e '
                 const fs = require("fs");
-                const yamlContent = fs.readFileSync(process.argv[1], "utf8");
-                const selected = process.argv[2].split(",");
-                let lines = yamlContent.split("\n");
-                let outLines = [], inServices = false, skipService = false;
+                const content = fs.readFileSync(process.argv[1], "utf8");
+                const selected = process.argv[2].split(/\s+/).map(s => s.trim());
+                const lines = content.split("\n");
+                let outLines = [], keep = true, section = "header";
+
                 for (let line of lines) {
-                    if (line.trim().startsWith("services:")) { inServices = true; outLines.push(line); continue; }
-                    if (line.trim().startsWith("networks:") || line.trim().startsWith("volumes:")) {
-                        inServices = false; skipService = false; outLines.push(line); continue;
+                    if (line.match(/^(version|networks|volumes):/)) {
+                        section = "other";
+                        keep = true;
+                        outLines.push(line);
+                        continue;
                     }
-                    if (inServices) {
+                    if (line.match(/^services:/)) {
+                        section = "services";
+                        keep = true;
+                        outLines.push(line);
+                        continue;
+                    }
+                    if (section === "services") {
                         const match = line.match(/^  ([a-zA-Z0-9_-]+):/);
-                        if (match) { skipService = !selected.includes(match[1]); }
+                        if (match) {
+                            keep = selected.includes(match[1]);
+                        }
+                        if (keep) outLines.push(line);
+                    } else {
+                        outLines.push(line);
                     }
-                    if (!skipService) outLines.push(line);
                 }
                 fs.writeFileSync(process.argv[3], outLines.join("\n"), "utf8");
-            ' "$STACK_FILE" "$(IFS=,; echo "${SELECTED_SERVICES[*]}")" "$SELECTED_STACK_FILE"
+            ' "$STACK_FILE" "${SELECTED_SERVICES[*]}" "$SELECTED_STACK_FILE"
 
             docker stack deploy -c "$SELECTED_STACK_FILE" infra
         fi
