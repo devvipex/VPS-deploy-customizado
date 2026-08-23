@@ -186,6 +186,23 @@ menu_env_generate() {
     fi
 }
 
+reset_ssl() {
+    echo ""
+    echo "🔐 [DevOps] RESET E RENOVAÇÃO DE CERTIFICADOS SSL"
+    echo "------------------------------------------------------"
+    echo "⚠️ Esta ação irá apagar o volume 'infra_traefik_certificates' e forçar o Traefik a emitir novos certificados SSL para todos os domínios."
+    read -p "Deseja resetar os certificados SSL agora? (s/N): " CONFIRM
+    if [[ "$CONFIRM" =~ ^[Ss]$ ]]; then
+        echo "🛑 Parando temporariamente o serviço do Traefik..."
+        docker service scale infra_traefik=0 2>/dev/null || true
+        echo "🧹 Apagando volume de certificados antigos..."
+        docker volume rm infra_traefik_certificates 2>/dev/null || true
+        echo "⚡ Religando o Traefik..."
+        docker service scale infra_traefik=1 2>/dev/null || true
+        echo "🎉 Certificados resetados com sucesso! O Traefik emitirá novas chaves SSL nos próximos segundos."
+    fi
+}
+
 # ----------------------------------------------------
 # 3. BACKUPS E RESTAURAÇÃO
 # ----------------------------------------------------
@@ -440,13 +457,14 @@ case "$1" in
     status) show_status ;;
     env) menu_env_generate ;;
     credentials|passwords) show_credentials ;;
+    ssl|reset-ssl) reset_ssl ;;
     backup) menu_backup ;;
     harden|security) menu_security ;;
     prune|clean) menu_maintenance ;;
     logs) menu_logs "$2" ;;
     help|--help|-h)
         echo "Uso: bash setup/devops.sh [comando]"
-        echo "Comandos disponíveis: deploy, stop, status, env, credentials, backup, security, prune, logs"
+        echo "Comandos disponíveis: deploy, stop, status, env, credentials, ssl, backup, security, prune, logs"
         exit 0
         ;;
     *)
