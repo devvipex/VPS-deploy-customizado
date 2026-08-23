@@ -68,6 +68,28 @@ function main() {
         isNewFile = true;
     } else {
         envContent = fs.readFileSync(targetEnvPath, 'utf-8');
+        // Se .env.example existir, verificar e anexar chaves novas que estejam ausentes
+        if (fs.existsSync(targetEnvExamplePath)) {
+            const exampleContent = fs.readFileSync(targetEnvExamplePath, 'utf-8');
+            const currentKeys = new Set(Object.keys(parseEnv(envContent)));
+            const exampleLines = exampleContent.split('\n');
+            let missingLines = [];
+            for (const line of exampleLines) {
+                const trimmed = line.trim();
+                if (!trimmed || trimmed.startsWith('#')) continue;
+                const eqIdx = trimmed.indexOf('=');
+                if (eqIdx !== -1) {
+                    const key = trimmed.slice(0, eqIdx).trim();
+                    if (!currentKeys.has(key)) {
+                        missingLines.push(line);
+                    }
+                }
+            }
+            if (missingLines.length > 0) {
+                console.log(`➕ Adicionando ${missingLines.length} nova(s) variável(is) proveniente(s) do template.`);
+                envContent += '\n# Variable(s) added automatically from template:\n' + missingLines.join('\n') + '\n';
+            }
+        }
     }
 
     const currentEnv = parseEnv(envContent);
@@ -96,7 +118,7 @@ function main() {
         const currentValue = trimmed.slice(eqIdx + 1).trim();
 
         if (isSecretKey(key) && (!currentValue || currentValue === '')) {
-            const length = (key.includes('KEY') || key.includes('SECRET')) ? 32 : 24;
+            const length = (key.includes('KEY') || key.includes('SECRET') || key.includes('TOKEN')) ? 32 : 24;
             const newPassword = generateSecurePassword(length);
             generatedCount++;
             return `${key}=${newPassword}`;

@@ -25,6 +25,6 @@ docker network create --driver overlay public_net 2>/dev/null || true
 # 4. Imprimir instrução final
 echo ""
 echo "🎉 Setup concluído com sucesso!"
-echo "Para subir os serviços da infraestrutura, execute:"
-echo "   docker stack deploy -c setup/docker/docker-stack.yml infra"
+echo "Para abrir a central única de gestão DevOps (Deploy, Backups, Logs, Hardening e Status), execute:"
+echo "   bash setup/devops.sh"
 echo ""
