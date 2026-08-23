@@ -120,6 +120,16 @@ function main() {
         const key = trimmed.slice(0, eqIdx).trim();
         const currentValue = trimmed.slice(eqIdx + 1).trim();
 
+        // Sanitizar nomes de imagens antigos/inexistentes no .env
+        if (key === 'EVOGO_IMAGE' && (currentValue.includes('evolutionapi/') || currentValue === 'evoapicloud/evolution-api:latest')) {
+            console.log(`⚡ Atualizando EVOGO_IMAGE para a imagem oficial em Go: evoapicloud/evolution-go:latest`);
+            return `${key}=evoapicloud/evolution-go:latest`;
+        }
+        if (key === 'EVOCCRM_IMAGE' && (currentValue.includes('evolutionapi/') || currentValue === 'evoapicloud/evolution-api:latest')) {
+            console.log(`⚡ Atualizando EVOCCRM_IMAGE para a imagem oficial do Frontend CRM: evoapicloud/evo-ai-frontend-community:latest`);
+            return `${key}=evoapicloud/evo-ai-frontend-community:latest`;
+        }
+
         if (isSecretKey(key) && (!currentValue || currentValue === '')) {
             const length = (key.includes('KEY') || key.includes('SECRET') || key.includes('TOKEN')) ? 32 : 24;
             const newPassword = generateSecurePassword(length);
