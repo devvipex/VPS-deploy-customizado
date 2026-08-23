@@ -292,15 +292,15 @@ services:
     deploy:
       labels:
         - "traefik.enable=true"
-        - "traefik.http.routers.evo-crm-core.rule=Host(`crm.${DOMAIN_NAME:-localhost}`) && (PathPrefix(`/VITE_AUTH_API_URL_PLACEHOLDER`) || PathPrefix(`/VITE_API_URL_PLACEHOLDER`) || PathPrefix(`/login`) || PathPrefix(`/refresh`) || PathPrefix(`/validate`) || PathPrefix(`/status`) || PathPrefix(`/global_config`) || PathPrefix(`/logout`) || PathPrefix(`/api`) || PathPrefix(`/auth`) || PathPrefix(`/v1`) || PathPrefix(`/cable`) || PathPrefix(`/rails`) || PathPrefix(`/socket.io`))"
-        - "traefik.http.routers.evo-crm-core.priority=100"
+        - "traefik.http.routers.evo-crm-core.rule=Host(`crm.${DOMAIN_NAME:-localhost}`) && (PathPrefix(`/api`) || PathPrefix(`/v1`) || PathPrefix(`/cable`) || PathPrefix(`/rails`) || PathPrefix(`/socket.io`))"
+        - "traefik.http.routers.evo-crm-core.priority=90"
         - "traefik.http.routers.evo-crm-core.entrypoints=web,websecure"
         - "traefik.http.routers.evo-crm-core.tls=true"
         - "traefik.http.routers.evo-crm-core.tls.certresolver=letsencryptresolver"
         - "traefik.http.services.evo-crm-core.loadbalancer.server.port=3000"
         - "traefik.docker.network=public_net"
 
-  # Evo Auth Service
+  # Evo Auth Service (Cuida do Login e Autenticação - Porta 3001)
   evo-auth:
     image: evoapicloud/evo-auth-service-community:latest
     environment:
@@ -308,12 +308,23 @@ services:
       - DATABASE_URL=postgresql://${POSTGRES_STD_USER:-postgres}:${POSTGRES_STD_PASSWORD}@postgres:5432/${POSTGRES_STD_DB:-evoc_db}?schema=public
       - JWT_SECRET=${EVOCCRM_SECRET_KEY:-jwt_secret_super_seguro}
     networks:
+      - public_net
       - internal_net
     logging:
       driver: "json-file"
       options:
         max-size: "10m"
         max-file: "5"
+    deploy:
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.evo-auth.rule=Host(`crm.${DOMAIN_NAME:-localhost}`) && (PathPrefix(`/VITE_AUTH_API_URL_PLACEHOLDER`) || PathPrefix(`/login`) || PathPrefix(`/refresh`) || PathPrefix(`/validate`) || PathPrefix(`/status`) || PathPrefix(`/global_config`) || PathPrefix(`/auth`))"
+        - "traefik.http.routers.evo-auth.priority=100"
+        - "traefik.http.routers.evo-auth.entrypoints=web,websecure"
+        - "traefik.http.routers.evo-auth.tls=true"
+        - "traefik.http.routers.evo-auth.tls.certresolver=letsencryptresolver"
+        - "traefik.http.services.evo-auth.loadbalancer.server.port=3001"
+        - "traefik.docker.network=public_net"
 
   # Evo AI Processor
   evo-ai-processor:
