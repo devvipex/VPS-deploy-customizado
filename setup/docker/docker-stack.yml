@@ -70,12 +70,15 @@ services:
         - "traefik.http.routers.jenkins.entrypoints=websecure"
         - "traefik.http.routers.jenkins.tls.certresolver=letsencryptresolver"
         - "traefik.http.services.jenkins.loadbalancer.server.port=8080"
+        - "traefik.docker.network=public_net"
 
   # ==========================================
   # 4. BANCOS DE DADOS & CACHE
   # ==========================================
   mongodb:
     image: mongo:latest
+    ports:
+      - "27017:27017"
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME:-root}
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
@@ -133,15 +136,39 @@ services:
     networks:
       - public_net
       - internal_net
+    deploy:
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.minio.rule=Host(`minio.${DOMAIN_NAME:-localhost}`)"
+        - "traefik.http.routers.minio.entrypoints=websecure"
+        - "traefik.http.routers.minio.tls.certresolver=letsencryptresolver"
+        - "traefik.http.services.minio.loadbalancer.server.port=9001"
+        - "traefik.docker.network=public_net"
 
   # ==========================================
   # 6. AUTOMAÇÃO DE WORKFLOWS (n8n)
   # ==========================================
   n8n:
     image: n8nio/n8n:latest
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "http://localhost:5678/healthz"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
     environment:
-      - N8N_ENCRYPTION_KEY=${N8N_ENCRYPTION_KEY}
+      - DB_TYPE=postgresdb
+      - DB_POSTGRESDB_DATABASE=${POSTGRES_DB:-app_db}
+      - DB_POSTGRESDB_HOST=postvector
+      - DB_POSTGRESDB_PORT=5432
+      - DB_POSTGRESDB_USER=${POSTGRES_USER:-postgres}
+      - DB_POSTGRESDB_PASSWORD=${POSTGRES_PASSWORD}
+      - N8N_HOST=n8n.${DOMAIN_NAME:-localhost}
       - N8N_PORT=5678
+      - N8N_PROTOCOL=https
+      - NODE_ENV=production
+      - WEBHOOK_URL=https://n8n.${DOMAIN_NAME:-localhost}/
+      - GENERIC_TIMEZONE=America/Sao_Paulo
     volumes:
       - n8n_data:/home/node/.n8n
     networks:
@@ -154,7 +181,7 @@ services:
         - "traefik.http.routers.n8n.entrypoints=websecure"
         - "traefik.http.routers.n8n.tls.certresolver=letsencryptresolver"
         - "traefik.http.services.n8n.loadbalancer.server.port=5678"
-
+        - "traefik.docker.network=public_net"
   # ==========================================
   # 7. AUTOMATION & TESTES E2E (Chromium Headless)
   # ==========================================
