@@ -242,7 +242,7 @@ services:
     image: ${EVOCCRM_IMAGE:-evoapicloud/evo-ai-frontend-community:latest}
     environment:
       - PORT=5173
-      - NEXT_PUBLIC_API_URL=https://crm-api.${DOMAIN_NAME:-localhost}
+      - NEXT_PUBLIC_API_URL=https://crm.${DOMAIN_NAME:-localhost}
     networks:
       - public_net
       - internal_net
@@ -255,6 +255,7 @@ services:
       labels:
         - "traefik.enable=true"
         - "traefik.http.routers.evoccrm.rule=Host(`crm.${DOMAIN_NAME:-localhost}`)"
+        - "traefik.http.routers.evoccrm.priority=1"
         - "traefik.http.routers.evoccrm.entrypoints=web,websecure"
         - "traefik.http.routers.evoccrm.tls=true"
         - "traefik.http.routers.evoccrm.tls.certresolver=letsencryptresolver"
@@ -267,7 +268,7 @@ services:
     environment:
       - PORT=3000
       - DATABASE_URL=postgresql://${POSTGRES_STD_USER:-postgres}:${POSTGRES_STD_PASSWORD}@postgres:5432/${POSTGRES_STD_DB:-evoc_db}?schema=public
-      - BACKEND_URL=https://crm-api.${DOMAIN_NAME:-localhost}
+      - BACKEND_URL=https://crm.${DOMAIN_NAME:-localhost}
     networks:
       - public_net
       - internal_net
@@ -279,7 +280,8 @@ services:
     deploy:
       labels:
         - "traefik.enable=true"
-        - "traefik.http.routers.evo-crm-core.rule=Host(`crm-api.${DOMAIN_NAME:-localhost}`)"
+        - "traefik.http.routers.evo-crm-core.rule=Host(`crm.${DOMAIN_NAME:-localhost}`) && (PathPrefix(`/api`) || PathPrefix(`/socket.io`))"
+        - "traefik.http.routers.evo-crm-core.priority=100"
         - "traefik.http.routers.evo-crm-core.entrypoints=web,websecure"
         - "traefik.http.routers.evo-crm-core.tls=true"
         - "traefik.http.routers.evo-crm-core.tls.certresolver=letsencryptresolver"
