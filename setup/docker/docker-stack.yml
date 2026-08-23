@@ -106,6 +106,17 @@ services:
     networks:
       - internal_net
 
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_STD_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_STD_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_STD_DB:-evoc_db}
+    volumes:
+      - postgres_std_data:/var/lib/postgresql/data
+    networks:
+      - internal_net
+
   # ==========================================
   # 5. MESSAGING & STORAGE
   # ==========================================
@@ -146,7 +157,56 @@ services:
         - "traefik.docker.network=public_net"
 
   # ==========================================
-  # 6. AUTOMAÇÃO DE WORKFLOWS (n8n)
+  # 6. EVOLUTION SUITE (evogo & evoccrm)
+  # ==========================================
+  evogo:
+    image: ${EVOGO_IMAGE:-evolutionapi/evogo:latest}
+    environment:
+      - SERVER_PORT=${EVOGO_PORT:-8080}
+      - AUTHENTICATION_API_KEY=${EVOGO_API_KEY}
+      - DATABASE_ENABLED=true
+      - DATABASE_PROVIDER=postgresql
+      - DATABASE_CONNECTION_URI=postgres://${POSTGRES_STD_USER:-postgres}:${POSTGRES_STD_PASSWORD}@postgres:5432/${POSTGRES_STD_DB:-evoc_db}
+      - REDIS_ENABLED=true
+      - REDIS_URI=redis://:${REDIS_PASSWORD}@redis:6379/0
+    volumes:
+      - evogo_data:/app/data
+    networks:
+      - public_net
+      - internal_net
+    deploy:
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.evogo.rule=Host(`evogo.${DOMAIN_NAME:-localhost}`)"
+        - "traefik.http.routers.evogo.entrypoints=websecure"
+        - "traefik.http.routers.evogo.tls.certresolver=letsencryptresolver"
+        - "traefik.http.services.evogo.loadbalancer.server.port=8080"
+        - "traefik.docker.network=public_net"
+
+  evoccrm:
+    image: ${EVOCCRM_IMAGE:-evolutionapi/evoccrm:latest}
+    environment:
+      - PORT=${EVOCCRM_PORT:-3000}
+      - SECRET_KEY=${EVOCCRM_SECRET_KEY}
+      - DATABASE_URL=postgres://${POSTGRES_STD_USER:-postgres}:${POSTGRES_STD_PASSWORD}@postgres:5432/${POSTGRES_STD_DB:-evoc_db}
+      - REDIS_URL=redis://:${REDIS_PASSWORD}@redis:6379/1
+      - EVOGO_API_URL=http://evogo:8080
+    volumes:
+      - evoccrm_data:/app/data
+    networks:
+      - public_net
+      - internal_net
+    deploy:
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.evoccrm.rule=Host(`crm.${DOMAIN_NAME:-localhost}`)"
+        - "traefik.http.routers.evoccrm.entrypoints=websecure"
+        - "traefik.http.routers.evoccrm.tls.certresolver=letsencryptresolver"
+        - "traefik.http.services.evoccrm.loadbalancer.server.port=3000"
+        - "traefik.docker.network=public_net"
+
+  # ==========================================
+  # 7. AUTOMAÇÃO DE WORKFLOWS (n8n)
   # ==========================================
   n8n:
     image: n8nio/n8n:latest
@@ -158,11 +218,11 @@ services:
       start_period: 60s
     environment:
       - DB_TYPE=postgresdb
-      - DB_POSTGRESDB_DATABASE=${POSTGRES_DB:-app_db}
-      - DB_POSTGRESDB_HOST=postvector
+      - DB_POSTGRESDB_DATABASE=${POSTGRES_STD_DB:-evoc_db}
+      - DB_POSTGRESDB_HOST=postgres
       - DB_POSTGRESDB_PORT=5432
-      - DB_POSTGRESDB_USER=${POSTGRES_USER:-postgres}
-      - DB_POSTGRESDB_PASSWORD=${POSTGRES_PASSWORD}
+      - DB_POSTGRESDB_USER=${POSTGRES_STD_USER:-postgres}
+      - DB_POSTGRESDB_PASSWORD=${POSTGRES_STD_PASSWORD}
       - N8N_HOST=n8n.${DOMAIN_NAME:-localhost}
       - N8N_PORT=5678
       - N8N_PROTOCOL=https
@@ -182,8 +242,9 @@ services:
         - "traefik.http.routers.n8n.tls.certresolver=letsencryptresolver"
         - "traefik.http.services.n8n.loadbalancer.server.port=5678"
         - "traefik.docker.network=public_net"
+
   # ==========================================
-  # 7. AUTOMATION & TESTES E2E (Chromium Headless)
+  # 8. AUTOMATION & TESTES E2E (Chromium Headless)
   # ==========================================
   chromium-automation:
     image: zenika/alpine-chrome:latest
@@ -212,6 +273,9 @@ volumes:
   mongo_data:
   redis_data:
   postgres_data:
+  postgres_std_data:
   rabbitmq_data:
   minio_data:
+  evogo_data:
+  evoccrm_data:
   n8n_data:

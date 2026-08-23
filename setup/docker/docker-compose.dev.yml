@@ -92,6 +92,19 @@ services:
     networks:
       - dev_net
 
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_STD_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_STD_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_STD_DB:-evoc_db}
+    ports:
+      - "${POSTGRES_STD_PORT:-5433}:5432"
+    volumes:
+      - postgres_std_dev_data:/var/lib/postgresql/data
+    networks:
+      - dev_net
+
   # ==========================================
   # 5. MESSAGING & STORAGE
   # ==========================================
@@ -123,11 +136,60 @@ services:
       - dev_net
 
   # ==========================================
-  # 6. AUTOMAÇÃO DE WORKFLOWS (n8n DEV)
+  # 6. EVOLUTION SUITE (evogo & evoccrm DEV)
+  # ==========================================
+  evogo:
+    image: ${EVOGO_IMAGE:-evolutionapi/evogo:latest}
+    environment:
+      - SERVER_PORT=${EVOGO_PORT:-8080}
+      - AUTHENTICATION_API_KEY=${EVOGO_API_KEY}
+      - DATABASE_ENABLED=true
+      - DATABASE_PROVIDER=postgresql
+      - DATABASE_CONNECTION_URI=postgres://${POSTGRES_STD_USER:-postgres}:${POSTGRES_STD_PASSWORD}@postgres:5432/${POSTGRES_STD_DB:-evoc_db}
+      - REDIS_ENABLED=true
+      - REDIS_URI=redis://:${REDIS_PASSWORD}@redis:6379/0
+    ports:
+      - "${EVOGO_PORT:-8080}:8080"
+    volumes:
+      - evogo_dev_data:/app/data
+    networks:
+      - dev_net
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.evogo.rule=Host(`evogo.localhost`)"
+      - "traefik.http.services.evogo.loadbalancer.server.port=8080"
+
+  evoccrm:
+    image: ${EVOCCRM_IMAGE:-evolutionapi/evoccrm:latest}
+    environment:
+      - PORT=${EVOCCRM_PORT:-3000}
+      - SECRET_KEY=${EVOCCRM_SECRET_KEY}
+      - DATABASE_URL=postgres://${POSTGRES_STD_USER:-postgres}:${POSTGRES_STD_PASSWORD}@postgres:5432/${POSTGRES_STD_DB:-evoc_db}
+      - REDIS_URL=redis://:${REDIS_PASSWORD}@redis:6379/1
+      - EVOGO_API_URL=http://evogo:8080
+    ports:
+      - "${EVOCCRM_PORT:-3000}:3000"
+    volumes:
+      - evoccrm_dev_data:/app/data
+    networks:
+      - dev_net
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.evoccrm.rule=Host(`crm.localhost`)"
+      - "traefik.http.services.evoccrm.loadbalancer.server.port=3000"
+
+  # ==========================================
+  # 7. AUTOMAÇÃO DE WORKFLOWS (n8n DEV)
   # ==========================================
   n8n:
     image: n8nio/n8n:latest
     environment:
+      - DB_TYPE=postgresdb
+      - DB_POSTGRESDB_DATABASE=${POSTGRES_STD_DB:-evoc_db}
+      - DB_POSTGRESDB_HOST=postgres
+      - DB_POSTGRESDB_PORT=5432
+      - DB_POSTGRESDB_USER=${POSTGRES_STD_USER:-postgres}
+      - DB_POSTGRESDB_PASSWORD=${POSTGRES_STD_PASSWORD}
       - N8N_ENCRYPTION_KEY=${N8N_ENCRYPTION_KEY}
       - N8N_PORT=5678
     ports:
@@ -142,7 +204,7 @@ services:
       - "traefik.http.services.n8n.loadbalancer.server.port=5678"
 
   # ==========================================
-  # 7. AUTOMATION & TESTES E2E (Chromium Headless)
+  # 8. AUTOMATION & TESTES E2E (Chromium Headless)
   # ==========================================
   chromium-automation:
     image: zenika/alpine-chrome:latest
@@ -167,6 +229,9 @@ volumes:
   mongo_dev_data:
   redis_dev_data:
   postgres_dev_data:
+  postgres_std_dev_data:
   rabbitmq_dev_data:
   minio_dev_data:
+  evogo_dev_data:
+  evoccrm_dev_data:
   n8n_dev_data:
