@@ -209,7 +209,7 @@ services:
   # 6. EVOLUTION SUITE (evogo & evoccrm)
   # ==========================================
   evogo:
-    image: ${EVOGO_IMAGE:-evoapicloud/evolution-api:latest}
+    image: ${EVOGO_IMAGE:-evoapicloud/evolution-go:latest}
     environment:
       - SERVER_PORT=${EVOGO_PORT:-8080}
       - AUTHENTICATION_API_KEY=${EVOGO_API_KEY}
