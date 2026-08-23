@@ -15,8 +15,9 @@ services:
       - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
       - "--entrypoints.web.http.redirections.entryPoint.scheme=https"
       - "--entrypoints.websecure.address=:443"
-      - "--certificatesresolvers.letsencryptresolver.acme.tlschallenge=true"
-      - "--certificatesresolvers.letsencryptresolver.acme.email=${TRAEFIK_ACME_EMAIL:-admin@localhost}"
+      - "--certificatesresolvers.letsencryptresolver.acme.httpchallenge=true"
+      - "--certificatesresolvers.letsencryptresolver.acme.httpchallenge.entrypoint=web"
+      - "--certificatesresolvers.letsencryptresolver.acme.email=${TRAEFIK_ACME_EMAIL:-admin@pablodantascorretor.com}"
       - "--certificatesresolvers.letsencryptresolver.acme.storage=/letsencrypt/acme.json"
     ports:
       - "80:80"
