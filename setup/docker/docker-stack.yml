@@ -241,6 +241,7 @@ services:
   evoccrm:
     image: ${EVOCCRM_IMAGE:-evoapicloud/evolution-api:latest}
     environment:
+      - SERVER_PORT=${EVOCCRM_PORT:-3000}
       - PORT=${EVOCCRM_PORT:-3000}
       - SECRET_KEY=${EVOCCRM_SECRET_KEY}
       - DATABASE_URL=postgres://${POSTGRES_STD_USER:-postgres}:${POSTGRES_STD_PASSWORD}@postgres:5432/${POSTGRES_STD_DB:-evoc_db}
