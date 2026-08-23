@@ -318,7 +318,7 @@ services:
     deploy:
       labels:
         - "traefik.enable=true"
-        - "traefik.http.routers.evo-auth.rule=Host(`crm.${DOMAIN_NAME:-localhost}`) && (PathPrefix(`/VITE_AUTH_API_URL_PLACEHOLDER`) || PathPrefix(`/login`) || PathPrefix(`/refresh`) || PathPrefix(`/validate`) || PathPrefix(`/status`) || PathPrefix(`/global_config`) || PathPrefix(`/auth`))"
+        - "traefik.http.routers.evo-auth.rule=Host(`crm.${DOMAIN_NAME:-localhost}`) && (PathPrefix(`/api/v1/auth`) || PathPrefix(`/VITE_AUTH_API_URL_PLACEHOLDER`) || PathPrefix(`/login`) || PathPrefix(`/refresh`) || PathPrefix(`/validate`) || PathPrefix(`/status`) || PathPrefix(`/global_config`) || PathPrefix(`/auth`))"
         - "traefik.http.routers.evo-auth.priority=100"
         - "traefik.http.routers.evo-auth.entrypoints=web,websecure"
         - "traefik.http.routers.evo-auth.tls=true"
