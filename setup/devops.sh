@@ -302,10 +302,11 @@ menu_maintenance() {
     echo "🧹 [DevOps] MANUTENÇÃO & LIMPEZA DOCKER"
     echo "------------------------------------------------------"
     echo "1) Diagnóstico de Uso de Disco (df -h & docker system df)"
-    echo "2) Executar Prune Completo no Docker (Imagens, Caches & Volumes Órfãos)"
-    echo "3) Voltar"
+    echo "2) Executar Prune Padrão no Docker (Imagens e Caches)"
+    echo "3) 🔥 Hard Reset Profundo (Remover Stacks + Volumes Nomeados + Volume Prune)"
+    echo "4) Voltar"
     echo "------------------------------------------------------"
-    read -p "Opção [1-3]: " MNT_OPT
+    read -p "Opção [1-4]: " MNT_OPT
     case $MNT_OPT in
         1)
             echo "💾 USO DE DISCO DO SISTEMA:"
@@ -320,6 +321,22 @@ menu_maintenance() {
             if [[ "$CONFIRM" =~ ^[Ss]$ ]]; then
                 docker system prune -af --volumes
                 echo "✅ Limpeza do Docker executada com sucesso!"
+            fi
+            ;;
+        3)
+            echo "⚠️ ATENÇÃO: Esta ação irá parar a stack 'infra' e apagar TODOS os volumes nomeados do Docker (dados de bancos, certificados do Traefik, etc)."
+            read -p "Tem certeza absoluta que deseja executar a LIMPEZA PROFUNDA DE VOLUMES? (digite DEEP-PURGE): " CONFIRM
+            if [ "$CONFIRM" == "DEEP-PURGE" ]; then
+                echo "🛑 Encerrando stack 'infra'..."
+                docker stack rm infra 2>/dev/null || true
+                sleep 5
+                echo "🧹 Removendo volumes nomeados da infraestrutura..."
+                docker volume rm $(docker volume ls -q -f name=infra_) 2>/dev/null || true
+                docker volume prune -af
+                docker system prune -af --volumes
+                echo "🎉 Limpeza profunda concluída com sucesso! Nenhum resquício de volume antigo permaneceu."
+            else
+                echo "Operação de limpeza profunda cancelada."
             fi
             ;;
     esac
@@ -359,13 +376,14 @@ case "$1" in
     stop) menu_stop ;;
     status) show_status ;;
     env) menu_env_generate ;;
+    credentials|passwords) show_credentials ;;
     backup) menu_backup ;;
     harden|security) menu_security ;;
     prune|clean) menu_maintenance ;;
     logs) menu_logs "$2" ;;
     help|--help|-h)
         echo "Uso: bash setup/devops.sh [comando]"
-        echo "Comandos disponíveis: deploy, stop, status, env, backup, security, prune, logs"
+        echo "Comandos disponíveis: deploy, stop, status, env, credentials, backup, security, prune, logs"
         exit 0
         ;;
     *)
@@ -377,10 +395,10 @@ case "$1" in
             echo " 1) 🚀 Deploy Seletivo / Orquestração (Dev/Prod)"
             echo " 2) 🛑 Parar Serviços / Encerrar Stacks"
             echo " 3) 📊 Status da Infraestrutura & Containers"
-            echo " 4) 🔑 Gerar / Sincronizar Chaves de Segurança (.env)"
+            echo " 4) 🔑 Gerar / Ver Resumo de Credenciais (CREDENTIALS.txt)"
             echo " 5) 📦 Backup & Restauração de Dados"
             echo " 6) 🛡️  Segurança & Hardening da VPS"
-            echo " 7) 🧹 Limpeza & Manutenção Docker (Prune / Disco)"
+            echo " 7) 🧹 Limpeza & Manutenção Docker (Prune / Limpeza de Volumes)"
             echo " 8) 📜 Logs em Tempo Real por Serviço"
             echo " 9) 🚪 Sair"
             echo "======================================================"
@@ -389,7 +407,7 @@ case "$1" in
                 1) menu_deploy ;;
                 2) menu_stop ;;
                 3) show_status ;;
-                4) menu_env_generate ;;
+                4) show_credentials ;;
                 5) menu_backup ;;
                 6) menu_security ;;
                 7) menu_maintenance ;;

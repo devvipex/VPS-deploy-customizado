@@ -129,15 +129,57 @@ function main() {
 
     fs.writeFileSync(targetEnvPath, updatedLines.join('\n'), 'utf-8');
 
+    const finalEnv = parseEnv(fs.readFileSync(targetEnvPath, 'utf-8'));
+    const credPath = path.join(ROOT_DIR, 'setup', 'CREDENTIALS.txt');
+    const domain = finalEnv['DOMAIN_NAME'] || 'localhost';
+
+    const credContent = `======================================================
+     🔑 RESUMO DE CREDENCIAIS & ACESSOS DA INFRAESTRUTURA
+======================================================
+Cliente           : ${finalEnv.CLIENT_NAME || 'n/a'}
+Domínio Principal : ${domain}
+E-mail SSL        : ${finalEnv.TRAEFIK_ACME_EMAIL || 'n/a'}
+Data da Atualização: ${getFormattedDate()}
+
+--- [1. PROXY REVERSO & GESTÃO] ---
+Traefik Dashboard : http://localhost:8082
+Portainer CE      : https://portainer.${domain}
+
+--- [2. CI/CD & BUILDS] ---
+Jenkins CI/CD     : https://jenkins.${domain}
+Jenkins Admin User: ${finalEnv.JENKINS_ADMIN_USER || 'admin'}
+Jenkins Password  : ${finalEnv.JENKINS_ADMIN_PASSWORD || '(gerado dinamicamente)'}
+
+--- [3. BANCOS DE DADOS & CACHE] ---
+Postvector (AI)   : User=${finalEnv.POSTGRES_USER || 'postgres'} | Pass=${finalEnv.POSTGRES_PASSWORD || 'n/a'} | DB=${finalEnv.POSTGRES_DB || 'app_db'}
+Postgres Padrão   : User=${finalEnv.POSTGRES_STD_USER || 'postgres'} | Pass=${finalEnv.POSTGRES_STD_PASSWORD || 'n/a'} | DB=${finalEnv.POSTGRES_STD_DB || 'evoc_db'}
+MongoDB           : User=${finalEnv.MONGO_INITDB_ROOT_USERNAME || 'root'} | Pass=${finalEnv.MONGO_INITDB_ROOT_PASSWORD || 'n/a'}
+Redis             : Pass=${finalEnv.REDIS_PASSWORD || 'n/a'}
+
+--- [4. MESSAGING & STORAGE] ---
+RabbitMQ          : User=${finalEnv.RABBITMQ_DEFAULT_USER || 'admin'} | Pass=${finalEnv.RABBITMQ_DEFAULT_PASS || 'n/a'}
+MinIO Console     : https://minio.${domain} | User=${finalEnv.MINIO_ROOT_USER || 'minioadmin'} | Pass=${finalEnv.MINIO_ROOT_PASSWORD || 'n/a'}
+
+--- [5. APLICAÇÕES EVOLUTION & AUTOMAÇÃO] ---
+n8n Workflows     : https://n8n.${domain} | EncryptionKey=${finalEnv.N8N_ENCRYPTION_KEY || 'n/a'}
+Evogo (API)       : https://evogo.${domain} | API_KEY=${finalEnv.EVOGO_API_KEY || 'n/a'}
+Evoccrm (CRM)     : https://crm.${domain} | Secret=${finalEnv.EVOCCRM_SECRET_KEY || 'n/a'}
+======================================================
+`;
+
+    fs.writeFileSync(credPath, credContent, 'utf-8');
+    const bkpCredPath = path.join(BACKUP_DIR, `credentials_${getFormattedDate()}.txt`);
+    fs.writeFileSync(bkpCredPath, credContent, 'utf-8');
+
     if (generatedCount > 0) {
         console.log(`✅ [Setup ENV] ${generatedCount} variáveis seguras geradas com sucesso!`);
     } else {
         console.log('ℹ️ [Setup ENV] Todas as variáveis de senha/segurança já estavam preenchidas.');
     }
+    console.log(`📄 Resumo de credenciais salvo em: setup/CREDENTIALS.txt`);
 
-    const domain = currentEnv['DOMAIN_NAME'];
     if (!domain || domain === 'localhost' || domain === 'cliente-demo.com') {
-        console.log('\n⚠️ [ATENÇÃO DOMÍNIO] DOMAIN_NAME está configurado como "' + (domain || 'vazio') + '".');
+        console.log('\n⚠️ [ATENÇÃO DOMÍNIO] DOMAIN_NAME está configurado como "' + domain + '".');
         console.log('👉 Para produção com SSL (Let\'s Encrypt), edite o arquivo .env e defina DOMAIN_NAME com seu domínio real (ex: DOMAIN_NAME=pablodantascorretor.com).\n');
     }
 }

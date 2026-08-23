@@ -1,6 +1,9 @@
 .env
+CREDENTIALS.txt
+setup/CREDENTIALS.txt
 
-backups
+setup/backups/
+backups/
 
-node_modules
+node_modules/
 
