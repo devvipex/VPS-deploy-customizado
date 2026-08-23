@@ -208,7 +208,7 @@ services:
   # 6. EVOLUTION SUITE (evogo & evoccrm)
   # ==========================================
   evogo:
-    image: ${EVOGO_IMAGE:-evolutionapi/evogo:latest}
+    image: ${EVOGO_IMAGE:-evoapicloud/evolution-api:latest}
     environment:
       - SERVER_PORT=${EVOGO_PORT:-8080}
       - AUTHENTICATION_API_KEY=${EVOGO_API_KEY}
@@ -238,7 +238,7 @@ services:
         - "traefik.docker.network=public_net"
 
   evoccrm:
-    image: ${EVOCCRM_IMAGE:-evolutionapi/evoccrm:latest}
+    image: ${EVOCCRM_IMAGE:-evoapicloud/evolution-api:latest}
     environment:
       - PORT=${EVOCCRM_PORT:-3000}
       - SECRET_KEY=${EVOCCRM_SECRET_KEY}
