@@ -42,6 +42,21 @@ ALL_SERVICES=(
     "chromium-automation"
 )
 
+show_credentials() {
+    local cred_file="${ROOT_DIR}/setup/CREDENTIALS.txt"
+    if [ -f "$cred_file" ]; then
+        echo ""
+        cat "$cred_file"
+        echo ""
+    else
+        echo "📄 Arquivo de credenciais ainda não gerado. Executando o gerador..."
+        menu_env_generate
+        if [ -f "$cred_file" ]; then
+            cat "$cred_file"
+        fi
+    fi
+}
+
 # ----------------------------------------------------
 # 1. DEPLOY & ORQUESTRAÇÃO
 # ----------------------------------------------------
