@@ -269,18 +269,15 @@ services:
         - "traefik.http.services.evoccrm.loadbalancer.server.port=80"
         - "traefik.docker.network=public_net"
 
-  # Evo CRM Core API
-  evo-crm-core:
-    image: evoapicloud/evo-ai-crm-community:latest
+  # Evo CRM Gateway (Orion API Gateway - Porta 3030)
+  evo-crm-gateway:
+    image: evoapicloud/evo-crm-gateway:latest
     environment:
-      - PORT=3000
-      - SECRET_KEY_BASE=${EVOCCRM_SECRET_KEY:-v161kLsxexbd966WpNzGjhdqjmIroDwL}
-      - DATABASE_URL=postgresql://${POSTGRES_STD_USER:-postgres}:${POSTGRES_STD_PASSWORD}@postgres:5432/${POSTGRES_STD_DB:-evoc_db}?schema=public
-      - REDIS_URL=redis://:${REDIS_PASSWORD}@redis:6379/0
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
-      - REDIS_PASSWORD=${REDIS_PASSWORD}
-      - BACKEND_URL=https://crm.${DOMAIN_NAME:-localhost}
+      - AUTH_UPSTREAM=evo-auth:3001
+      - CRM_UPSTREAM=evo-crm-core:3000
+      - CORE_UPSTREAM=evo-agent-core:5555
+      - PROCESSOR_UPSTREAM=evo-ai-processor:8000
+      - BOT_RUNTIME_UPSTREAM=evo-bot-runtime:8080
     networks:
       - public_net
       - internal_net
@@ -292,21 +289,66 @@ services:
     deploy:
       labels:
         - "traefik.enable=true"
-        - "traefik.http.routers.evo-crm-core.rule=Host(`crm.${DOMAIN_NAME:-localhost}`) && (PathPrefix(`/api`) || PathPrefix(`/v1`) || PathPrefix(`/cable`) || PathPrefix(`/rails`) || PathPrefix(`/socket.io`))"
-        - "traefik.http.routers.evo-crm-core.priority=90"
-        - "traefik.http.routers.evo-crm-core.entrypoints=web,websecure"
-        - "traefik.http.routers.evo-crm-core.tls=true"
-        - "traefik.http.routers.evo-crm-core.tls.certresolver=letsencryptresolver"
-        - "traefik.http.services.evo-crm-core.loadbalancer.server.port=3000"
+        - "traefik.http.routers.evo-crm-gateway.rule=Host(`crm.${DOMAIN_NAME:-localhost}`) && (PathPrefix(`/api`) || PathPrefix(`/auth`) || PathPrefix(`/rails`) || PathPrefix(`/v1`) || PathPrefix(`/cable`) || PathPrefix(`/socket.io`) || PathPrefix(`/setup`))"
+        - "traefik.http.routers.evo-crm-gateway.priority=100"
+        - "traefik.http.routers.evo-crm-gateway.entrypoints=web,websecure"
+        - "traefik.http.routers.evo-crm-gateway.tls=true"
+        - "traefik.http.routers.evo-crm-gateway.tls.certresolver=letsencryptresolver"
+        - "traefik.http.services.evo-crm-gateway.loadbalancer.server.port=3030"
         - "traefik.docker.network=public_net"
+
+  # Evo CRM Core API
+  evo-crm-core:
+    image: evoapicloud/evo-ai-crm-community:latest
+    environment:
+      - PORT=3000
+      - RAILS_ENV=production
+      - SECRET_KEY_BASE=${EVOCCRM_SECRET_KEY:-v161kLsxexbd966WpNzGjhdqjmIroDwL}
+      - JWT_SECRET_KEY=${EVOCCRM_SECRET_KEY:-v161kLsxexbd966WpNzGjhdqjmIroDwL}
+      - EVOAI_CRM_API_TOKEN=${EVOCCRM_SECRET_KEY:-v161kLsxexbd966WpNzGjhdqjmIroDwL}
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_USERNAME=${POSTGRES_STD_USER:-postgres}
+      - POSTGRES_PASSWORD=${POSTGRES_STD_PASSWORD}
+      - POSTGRES_DATABASE=${POSTGRES_STD_DB:-evoc_db}
+      - POSTGRES_SSLMODE=disable
+      - DATABASE_URL=postgresql://${POSTGRES_STD_USER:-postgres}:${POSTGRES_STD_PASSWORD}@postgres:5432/${POSTGRES_STD_DB:-evoc_db}?schema=public
+      - REDIS_URL=redis://:${REDIS_PASSWORD}@redis:6379/0
+      - EVO_AUTH_SERVICE_URL=http://evo-auth:3001
+      - EVO_AI_CORE_SERVICE_URL=http://evo-agent-core:5555
+      - BACKEND_URL=https://crm.${DOMAIN_NAME:-localhost}
+      - FRONTEND_URL=https://crm.${DOMAIN_NAME:-localhost}
+      - CORS_ORIGINS=https://crm.${DOMAIN_NAME:-localhost}
+    networks:
+      - public_net
+      - internal_net
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
 
   # Evo Auth Service (Cuida do Login e Autenticação - Porta 3001)
   evo-auth:
     image: evoapicloud/evo-auth-service-community:latest
     environment:
       - PORT=3001
+      - RAILS_ENV=production
+      - SECRET_KEY_BASE=${EVOCCRM_SECRET_KEY:-v161kLsxexbd966WpNzGjhdqjmIroDwL}
+      - JWT_SECRET_KEY=${EVOCCRM_SECRET_KEY:-v161kLsxexbd966WpNzGjhdqjmIroDwL}
+      - EVOAI_CRM_API_TOKEN=${EVOCCRM_SECRET_KEY:-v161kLsxexbd966WpNzGjhdqjmIroDwL}
+      - DOORKEEPER_JWT_SECRET_KEY=${EVOCCRM_SECRET_KEY:-v161kLsxexbd966WpNzGjhdqjmIroDwL}
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_USERNAME=${POSTGRES_STD_USER:-postgres}
+      - POSTGRES_PASSWORD=${POSTGRES_STD_PASSWORD}
+      - POSTGRES_DATABASE=${POSTGRES_STD_DB:-evoc_db}
+      - POSTGRES_SSLMODE=disable
       - DATABASE_URL=postgresql://${POSTGRES_STD_USER:-postgres}:${POSTGRES_STD_PASSWORD}@postgres:5432/${POSTGRES_STD_DB:-evoc_db}?schema=public
-      - JWT_SECRET=${EVOCCRM_SECRET_KEY:-jwt_secret_super_seguro}
+      - REDIS_URL=redis://:${REDIS_PASSWORD}@redis:6379/0
+      - FRONTEND_URL=https://crm.${DOMAIN_NAME:-localhost}
+      - BACKEND_URL=https://crm.${DOMAIN_NAME:-localhost}
+      - CORS_ORIGINS=https://crm.${DOMAIN_NAME:-localhost}
     networks:
       - public_net
       - internal_net
@@ -315,16 +357,6 @@ services:
       options:
         max-size: "10m"
         max-file: "5"
-    deploy:
-      labels:
-        - "traefik.enable=true"
-        - "traefik.http.routers.evo-auth.rule=Host(`crm.${DOMAIN_NAME:-localhost}`) && (PathPrefix(`/api/v1/auth`) || PathPrefix(`/VITE_AUTH_API_URL_PLACEHOLDER`) || PathPrefix(`/login`) || PathPrefix(`/refresh`) || PathPrefix(`/validate`) || PathPrefix(`/status`) || PathPrefix(`/global_config`) || PathPrefix(`/auth`))"
-        - "traefik.http.routers.evo-auth.priority=100"
-        - "traefik.http.routers.evo-auth.entrypoints=web,websecure"
-        - "traefik.http.routers.evo-auth.tls=true"
-        - "traefik.http.routers.evo-auth.tls.certresolver=letsencryptresolver"
-        - "traefik.http.services.evo-auth.loadbalancer.server.port=3001"
-        - "traefik.docker.network=public_net"
 
   # Evo AI Processor
   evo-ai-processor:

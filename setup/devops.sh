@@ -38,6 +38,7 @@ ALL_SERVICES=(
     "minio"
     "evogo"
     "evoccrm"
+    "evo-crm-gateway"
     "evo-crm-core"
     "evo-auth"
     "evo-ai-processor"
