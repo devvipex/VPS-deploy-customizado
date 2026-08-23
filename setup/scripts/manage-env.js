@@ -134,6 +134,12 @@ function main() {
     } else {
         console.log('ℹ️ [Setup ENV] Todas as variáveis de senha/segurança já estavam preenchidas.');
     }
+
+    const domain = currentEnv['DOMAIN_NAME'];
+    if (!domain || domain === 'localhost' || domain === 'cliente-demo.com') {
+        console.log('\n⚠️ [ATENÇÃO DOMÍNIO] DOMAIN_NAME está configurado como "' + (domain || 'vazio') + '".');
+        console.log('👉 Para produção com SSL (Let\'s Encrypt), edite o arquivo .env e defina DOMAIN_NAME com seu domínio real (ex: DOMAIN_NAME=pablodantascorretor.com).\n');
+    }
 }
 
 main();

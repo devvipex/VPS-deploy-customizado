@@ -58,6 +58,7 @@ menu_deploy() {
 
     # Atualizar/Gerar chaves antes de subir
     menu_env_generate
+    load_env
 
     echo ""
     echo "Selecione quais serviços devem ir para o ar:"

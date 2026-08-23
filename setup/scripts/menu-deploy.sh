@@ -24,6 +24,11 @@ fi
 if command -v node >/dev/null 2>&1; then
     node "${ROOT_DIR}/setup/scripts/manage-env.js"
 fi
+if [ -f "${ROOT_DIR}/.env" ]; then
+    set -a
+    source "${ROOT_DIR}/.env"
+    set +a
+fi
 
 ALL_SERVICES=(
     "traefik"
