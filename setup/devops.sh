@@ -143,7 +143,9 @@ menu_stop() {
         1)
             echo "🛑 Removendo stack 'infra' do Swarm..."
             docker stack rm infra || true
-            echo "✅ Stack removida."
+            echo "⏳ Aguardando desligamento completo dos containers do Swarm (5s)..."
+            sleep 5
+            echo "✅ Stack encerrada com sucesso."
             ;;
         2)
             echo "🛑 Parando containers de dev..."
