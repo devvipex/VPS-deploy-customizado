@@ -552,6 +552,8 @@ services:
       - N8N_PORT=5678
       - N8N_PROTOCOL=https
       - NODE_ENV=production
+      - N8N_TRUST_PROXY=true
+      - N8N_WEBHOOK_URL=https://n8n.${DOMAIN_NAME:-localhost}/
       - WEBHOOK_URL=https://n8n.${DOMAIN_NAME:-localhost}/
       - GENERIC_TIMEZONE=America/Sao_Paulo
     volumes:
