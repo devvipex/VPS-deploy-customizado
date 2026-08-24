@@ -329,7 +329,7 @@ services:
     deploy:
       labels:
         - "traefik.enable=true"
-        - "traefik.http.routers.evo-crm-gateway.rule=Host(`crm.${DOMAIN_NAME:-localhost}`) && (PathPrefix(`/api`) || PathPrefix(`/public`) || PathPrefix(`/auth`) || PathPrefix(`/rails`) || PathPrefix(`/v1`) || PathPrefix(`/cable`) || PathPrefix(`/socket.io`) || PathPrefix(`/setup`))"
+        - "traefik.http.routers.evo-crm-gateway.rule=Host(`crm.${DOMAIN_NAME:-localhost}`) && (PathPrefix(`/api`) || PathPrefix(`/public`) || PathPrefix(`/auth`) || PathPrefix(`/rails`) || PathPrefix(`/v1`) || PathPrefix(`/cable`) || PathPrefix(`/socket.io`) || PathPrefix(`/setup`) || PathPrefix(`/webhooks`))"
         - "traefik.http.routers.evo-crm-gateway.priority=100"
         - "traefik.http.routers.evo-crm-gateway.entrypoints=web,websecure"
         - "traefik.http.routers.evo-crm-gateway.tls=true"
