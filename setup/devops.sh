@@ -10,6 +10,22 @@ ENV_FILE="${ROOT_DIR}/.env"
 
 mkdir -p "${BACKUP_DIR}" "${LOGS_DIR}"
 
+# Garantir memoria Swap de 4GB para evitar OOM Killer do Linux em producao
+ensure_swap() {
+    if [ -f /proc/swaps ]; then
+        local swap_count=$(wc -l < /proc/swaps 2>/dev/null || echo 0)
+        if [ "$swap_count" -le 1 ]; then
+            echo "⚠️ [Harden] Criando memória SWAP de 4GB para proteger a VPS contra OOM Killer..."
+            fallocate -l 4G /swapfile 2>/dev/null || dd if=/dev/zero of=/swapfile bs=1M count=4096 2>/dev/null || true
+            chmod 600 /swapfile 2>/dev/null || true
+            mkswap /swapfile 2>/dev/null || true
+            swapon /swapfile 2>/dev/null || true
+            echo "✅ [Harden] Memória SWAP de 4GB criada e ativada!"
+        fi
+    fi
+}
+ensure_swap
+
 # Função para carregar variáveis do .env
 load_env() {
     if [ -f "$ENV_FILE" ]; then
