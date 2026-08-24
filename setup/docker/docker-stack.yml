@@ -240,6 +240,8 @@ services:
       - REDIS_PASSWORD=${REDIS_PASSWORD}
       - REDIS_URI=redis://:${REDIS_PASSWORD}@redis:6379/0
       - CACHE_REDIS_URI=redis://:${REDIS_PASSWORD}@redis:6379/0
+      - RABBITMQ_ENABLED=true
+      - RABBITMQ_URI=amqp://admin:${RABBITMQ_PASSWORD:-rtE73pxQuyD1CtpyhPMgfY8x}@rabbitmq:5672
       - WADEBUG=INFO
       - LOGTYPE=console
     volumes:
