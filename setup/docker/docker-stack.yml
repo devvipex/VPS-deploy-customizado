@@ -368,8 +368,13 @@ services:
       - EVOGO_API_URL=http://evogo:8080
       - EVOGO_URL=http://evogo:8080
       - EVOLUTION_GO_URL=http://evogo:8080
+      - EVOLUTION_API_URL=http://evogo:8080
       - EVOGO_API_KEY=${EVOGO_API_KEY:-v161kLsxexbd966WpNzGjhdqjmIroDwL}
       - EVOLUTION_GO_API_KEY=${EVOGO_API_KEY:-v161kLsxexbd966WpNzGjhdqjmIroDwL}
+      - EVOLUTION_API_KEY=${EVOGO_API_KEY:-v161kLsxexbd966WpNzGjhdqjmIroDwL}
+      - EVOLUTION_KEY=${EVOGO_API_KEY:-v161kLsxexbd966WpNzGjhdqjmIroDwL}
+      - EVO_GO_API_KEY=${EVOGO_API_KEY:-v161kLsxexbd966WpNzGjhdqjmIroDwL}
+      - AUTHENTICATION_API_KEY=${EVOGO_API_KEY:-v161kLsxexbd966WpNzGjhdqjmIroDwL}
       - BACKEND_URL=https://crm.${DOMAIN_NAME:-localhost}
       - FRONTEND_URL=https://crm.${DOMAIN_NAME:-localhost}
       - CORS_ORIGINS=https://crm.${DOMAIN_NAME:-localhost}
