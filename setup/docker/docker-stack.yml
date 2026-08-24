@@ -239,7 +239,7 @@ services:
       - DATABASE_SAVE_DATA_INSTANCE=true
       - DATABASE_SAVE_DATA_NEW_MESSAGE=true
       - DATABASE_SAVE_MESSAGE_UPDATE=true
-      - DATABASE_SAVE_MESSAGES=false
+      - DATABASE_SAVE_MESSAGES=true
       - REDIS_ENABLED=true
       - CACHE_REDIS_ENABLED=true
       - REDIS_HOST=redis
@@ -249,6 +249,8 @@ services:
       - CACHE_REDIS_URI=redis://:${REDIS_PASSWORD}@redis:6379/0
       - AMQP_GLOBAL_ENABLED=true
       - AMQP_URL=amqp://admin:${RABBITMQ_PASSWORD:-rtE73pxQuyD1CtpyhPMgfY8x}@rabbitmq:5672
+      - WEBHOOK_GLOBAL_ENABLED=true
+      - WEBHOOK_URL=http://evo-crm-core:3000/webhooks/whatsapp/evolution_go
       - CONNECT_ON_STARTUP=true
       - WEBHOOKFILES=true
       - DEL_INSTANCE_ON_QR_TIMEOUT=false
