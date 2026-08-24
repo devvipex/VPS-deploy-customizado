@@ -251,6 +251,9 @@ services:
       - AMQP_URL=amqp://admin:${RABBITMQ_PASSWORD:-rtE73pxQuyD1CtpyhPMgfY8x}@rabbitmq:5672
       - WEBHOOK_GLOBAL_ENABLED=true
       - WEBHOOK_URL=http://evo-crm-core:3000/webhooks/whatsapp/evolution_go
+      - WEBHOOK_GLOBAL_WEBHOOK_BY_EVENTS=true
+      - WEBHOOK_EVENTS_MESSAGES_UPSERT=true
+      - WEBHOOK_EVENTS_SEND_MESSAGE=true
       - CONNECT_ON_STARTUP=true
       - WEBHOOKFILES=true
       - DEL_INSTANCE_ON_QR_TIMEOUT=false
