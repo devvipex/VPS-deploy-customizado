@@ -373,7 +373,19 @@ services:
     environment:
       - HOST=0.0.0.0
       - PORT=8000
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_USERNAME=${POSTGRES_STD_USER:-postgres}
+      - POSTGRES_PASSWORD=${POSTGRES_STD_PASSWORD}
+      - POSTGRES_DATABASE=${POSTGRES_STD_DB:-evoc_db}
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USER=${POSTGRES_STD_USER:-postgres}
+      - DB_PASSWORD=${POSTGRES_STD_PASSWORD}
+      - DB_NAME=${POSTGRES_STD_DB:-evoc_db}
       - POSTGRES_CONNECTION_STRING=postgresql://${POSTGRES_STD_USER:-postgres}:${POSTGRES_STD_PASSWORD}@postgres:5432/${POSTGRES_STD_DB:-evoc_db}?sslmode=disable
+      - DATABASE_URL=postgresql+asyncpg://${POSTGRES_STD_USER:-postgres}:${POSTGRES_STD_PASSWORD}@postgres:5432/${POSTGRES_STD_DB:-evoc_db}?sslmode=disable
+      - POSTGRES_URL=postgresql+asyncpg://${POSTGRES_STD_USER:-postgres}:${POSTGRES_STD_PASSWORD}@postgres:5432/${POSTGRES_STD_DB:-evoc_db}?sslmode=disable
       - REDIS_HOST=redis
       - REDIS_PORT=6379
       - REDIS_PASSWORD=${REDIS_PASSWORD}
