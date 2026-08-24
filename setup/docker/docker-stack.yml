@@ -206,19 +206,33 @@ services:
         - "traefik.docker.network=public_net"
 
   # ==========================================
-  # 6. EVOLUTION SUITE (evogo & evoccrm)
+  # 5. EVOLUTION API (Golang)
   # ==========================================
   evogo:
     image: ${EVOGO_IMAGE:-evoapicloud/evolution-go:latest}
     environment:
       - SERVER_PORT=${EVOGO_PORT:-8080}
       - CLIENT_NAME=${CLIENT_NAME:-evolution}
-      - GLOBAL_API_KEY=${EVOGO_API_KEY}
-      - AUTHENTICATION_API_KEY=${EVOGO_API_KEY}
+      - GLOBAL_API_KEY=${EVOGO_API_KEY:-v161kLsxexbd966WpNzGjhdqjmIroDwL}
+      - AUTHENTICATION_API_KEY=${EVOGO_API_KEY:-v161kLsxexbd966WpNzGjhdqjmIroDwL}
+      - AUTHENTICATION_EXPOSE_IN_FETCH_INSTANCES=true
+      - DATABASE_ENABLED=true
+      - DATABASE_PROVIDER=postgres
+      - DATABASE_CONNECTION_URI=postgresql://${POSTGRES_STD_USER:-postgres}:${POSTGRES_STD_PASSWORD}@postgres:5432/${POSTGRES_STD_DB:-evoc_db}?sslmode=disable
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=${POSTGRES_STD_USER:-postgres}
+      - POSTGRES_PASSWORD=${POSTGRES_STD_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_STD_DB:-evoc_db}
       - POSTGRES_AUTH_DB=postgresql://${POSTGRES_STD_USER:-postgres}:${POSTGRES_STD_PASSWORD}@postgres:5432/${POSTGRES_STD_DB:-evoc_db}?sslmode=disable
       - POSTGRES_USERS_DB=postgresql://${POSTGRES_STD_USER:-postgres}:${POSTGRES_STD_PASSWORD}@postgres:5432/${POSTGRES_STD_DB:-evoc_db}?sslmode=disable
       - REDIS_ENABLED=true
+      - CACHE_REDIS_ENABLED=true
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
       - REDIS_URI=redis://:${REDIS_PASSWORD}@redis:6379/0
+      - CACHE_REDIS_URI=redis://:${REDIS_PASSWORD}@redis:6379/0
       - DATABASE_SAVE_MESSAGES=false
       - WADEBUG=INFO
       - LOGTYPE=console
