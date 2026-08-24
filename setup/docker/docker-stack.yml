@@ -210,6 +210,12 @@ services:
   # ==========================================
   evogo:
     image: ${EVOGO_IMAGE:-evoapicloud/evolution-go:latest}
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "http://127.0.0.1:8080/server/ok"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
     environment:
       - SERVER_URL=https://evogo.${DOMAIN_NAME:-localhost}
       - SERVER_PORT=${EVOGO_PORT:-8080}
