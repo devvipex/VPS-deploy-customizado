@@ -285,7 +285,10 @@ services:
       - VITE_CRM_API_URL=https://crm.${DOMAIN_NAME:-localhost}
       - VITE_EVOAI_API_URL=https://crm.${DOMAIN_NAME:-localhost}
       - VITE_AGENT_PROCESSOR_URL=https://crm.${DOMAIN_NAME:-localhost}
+      - VITE_EVOFLOW_API_URL=https://crm.${DOMAIN_NAME:-localhost}
+      - VITE_EVOFLOW_URL=https://crm.${DOMAIN_NAME:-localhost}
       - VITE_WS_URL=wss://crm.${DOMAIN_NAME:-localhost}
+      - VITE_ACTION_CABLE_URL=wss://crm.${DOMAIN_NAME:-localhost}/cable
       - NEXT_PUBLIC_API_URL=https://crm.${DOMAIN_NAME:-localhost}
     networks:
       - public_net
