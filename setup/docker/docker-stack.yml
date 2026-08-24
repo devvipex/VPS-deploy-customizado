@@ -378,6 +378,10 @@ services:
       - BACKEND_URL=https://crm.${DOMAIN_NAME:-localhost}
       - FRONTEND_URL=https://crm.${DOMAIN_NAME:-localhost}
       - CORS_ORIGINS=https://crm.${DOMAIN_NAME:-localhost}
+      - ACTIVE_STORAGE_SERVICE=local
+    volumes:
+      - evo_crm_storage:/app/storage
+      - evo_crm_storage:/rails/storage
     networks:
       - public_net
       - internal_net
@@ -423,6 +427,10 @@ services:
       - BACKEND_URL=https://crm.${DOMAIN_NAME:-localhost}
       - FRONTEND_URL=https://crm.${DOMAIN_NAME:-localhost}
       - CORS_ORIGINS=https://crm.${DOMAIN_NAME:-localhost}
+      - ACTIVE_STORAGE_SERVICE=local
+    volumes:
+      - evo_crm_storage:/app/storage
+      - evo_crm_storage:/rails/storage
     networks:
       - public_net
       - internal_net
@@ -713,5 +721,6 @@ volumes:
   minio_data:
   evogo_data:
   evoccrm_data:
+  evo_crm_storage:
   n8n_data:
   clickhouse_data:
