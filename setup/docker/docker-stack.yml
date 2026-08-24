@@ -250,6 +250,8 @@ services:
       - AMQP_URL=amqp://admin:${RABBITMQ_PASSWORD:-rtE73pxQuyD1CtpyhPMgfY8x}@rabbitmq:5672
       - CONNECT_ON_STARTUP=true
       - WEBHOOKFILES=true
+      - DEL_INSTANCE_ON_QR_TIMEOUT=false
+      - QRCODE_LIMIT=10
       - WADEBUG=INFO
       - LOGTYPE=console
     volumes:
