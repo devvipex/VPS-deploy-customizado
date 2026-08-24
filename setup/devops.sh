@@ -44,6 +44,8 @@ ALL_SERVICES=(
     "evo-ai-processor"
     "evo-agent-core"
     "evo-bot-runtime"
+    "clickhouse"
+    "evoflow"
     "n8n"
     "chromium-automation"
 )

@@ -246,9 +246,13 @@ services:
     image: ${EVOCCRM_IMAGE:-evoapicloud/evo-ai-frontend-community:latest}
     environment:
       - PORT=80
+      - VITE_APP_ENV=production
       - VITE_AUTH_API_URL=https://crm.${DOMAIN_NAME:-localhost}
       - VITE_API_URL=https://crm.${DOMAIN_NAME:-localhost}
       - VITE_CRM_API_URL=https://crm.${DOMAIN_NAME:-localhost}
+      - VITE_EVOAI_API_URL=https://crm.${DOMAIN_NAME:-localhost}
+      - VITE_AGENT_PROCESSOR_URL=https://crm.${DOMAIN_NAME:-localhost}
+      - VITE_WS_URL=wss://crm.${DOMAIN_NAME:-localhost}
       - NEXT_PUBLIC_API_URL=https://crm.${DOMAIN_NAME:-localhost}
     networks:
       - public_net
@@ -289,7 +293,7 @@ services:
     deploy:
       labels:
         - "traefik.enable=true"
-        - "traefik.http.routers.evo-crm-gateway.rule=Host(`crm.${DOMAIN_NAME:-localhost}`) && (PathPrefix(`/api`) || PathPrefix(`/auth`) || PathPrefix(`/rails`) || PathPrefix(`/v1`) || PathPrefix(`/cable`) || PathPrefix(`/socket.io`) || PathPrefix(`/setup`))"
+        - "traefik.http.routers.evo-crm-gateway.rule=Host(`crm.${DOMAIN_NAME:-localhost}`) && (PathPrefix(`/api`) || PathPrefix(`/public`) || PathPrefix(`/auth`) || PathPrefix(`/rails`) || PathPrefix(`/v1`) || PathPrefix(`/cable`) || PathPrefix(`/socket.io`) || PathPrefix(`/setup`))"
         - "traefik.http.routers.evo-crm-gateway.priority=100"
         - "traefik.http.routers.evo-crm-gateway.entrypoints=web,websecure"
         - "traefik.http.routers.evo-crm-gateway.tls=true"
@@ -316,6 +320,10 @@ services:
       - REDIS_URL=redis://:${REDIS_PASSWORD}@redis:6379/0
       - EVO_AUTH_SERVICE_URL=http://evo-auth:3001
       - EVO_AI_CORE_SERVICE_URL=http://evo-agent-core:5555
+      - EVO_FLOW_ENABLED=true
+      - EVO_FLOW_API_URL=http://evoflow:3334/api/v1
+      - AUTH_APIKEY_INTEGRATION_LOCAL=${EVOCCRM_SECRET_KEY:-v161kLsxexbd966WpNzGjhdqjmIroDwL}
+      - EVO_FLOW_ALLOW_INSECURE=true
       - BACKEND_URL=https://crm.${DOMAIN_NAME:-localhost}
       - FRONTEND_URL=https://crm.${DOMAIN_NAME:-localhost}
       - CORS_ORIGINS=https://crm.${DOMAIN_NAME:-localhost}
@@ -389,6 +397,64 @@ services:
     image: evoapicloud/evo-bot-runtime:latest
     environment:
       - PORT=8080
+    networks:
+      - internal_net
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
+
+  # ClickHouse (Storage de Eventos de Formulários e Lead Tracking)
+  clickhouse:
+    image: clickhouse/clickhouse-server:latest
+    environment:
+      - CLICKHOUSE_USER=default
+      - CLICKHOUSE_PASSWORD=${EVOCCRM_SECRET_KEY:-v161kLsxexbd966WpNzGjhdqjmIroDwL}
+      - CLICKHOUSE_DB=default
+    volumes:
+      - clickhouse_data:/var/lib/clickhouse
+    networks:
+      - internal_net
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
+
+  # EvoFlow (Engine de Formulários, Segmentos e Campanhas - Porta 3334)
+  evoflow:
+    image: evoapicloud/evo-flow-community:develop
+    environment:
+      - NODE_ENV=production
+      - RUN_MODE=api
+      - QUEUE_MODE=direct
+      - STORAGE_MODE=clickhouse
+      - WRITE_MODE=ch-sync
+      - PORT=3334
+      - LOG_LEVEL=log
+      - AUTH_APIKEY_INTEGRATION_LOCAL=${EVOCCRM_SECRET_KEY:-v161kLsxexbd966WpNzGjhdqjmIroDwL}
+      - EVO_AUTH_SERVICE_URL=http://evo-auth:3001
+      - EVO_AUTH_VALIDATE_TOKEN_ENDPOINT=/api/v1/auth/validate
+      - EVOAI_CRM_BASE_URL=http://evo-crm-core:3000
+      - EVOAI_CRM_API_TOKEN=${EVOCCRM_SECRET_KEY:-v161kLsxexbd966WpNzGjhdqjmIroDwL}
+      - BROKER_TYPE=rabbitmq
+      - RABBITMQ_URL=amqp://admin:${RABBITMQ_PASSWORD:-rtE73pxQuyD1CtpyhPMgfY8x}@rabbitmq:5672
+      - CLICKHOUSE_HOST=clickhouse
+      - CLICKHOUSE_PORT=8123
+      - CLICKHOUSE_DATABASE=evo_campaign
+      - CLICKHOUSE_USERNAME=default
+      - CLICKHOUSE_PASSWORD=${EVOCCRM_SECRET_KEY:-v161kLsxexbd966WpNzGjhdqjmIroDwL}
+      - CLICKHOUSE_TABLE=contact_events
+      - POSTGRES_DB_HOST=postgres
+      - POSTGRES_DB_PORT=5432
+      - POSTGRES_DB_USERNAME=${POSTGRES_STD_USER:-postgres}
+      - POSTGRES_DB_PASSWORD=${POSTGRES_STD_PASSWORD}
+      - POSTGRES_DB_DATABASE=evo_campaign
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - REDIS_DB=4
     networks:
       - internal_net
     logging:
@@ -482,3 +548,4 @@ volumes:
   evogo_data:
   evoccrm_data:
   n8n_data:
+  clickhouse_data:
