@@ -211,8 +211,11 @@ services:
   evogo:
     image: ${EVOGO_IMAGE:-evoapicloud/evolution-go:latest}
     environment:
+      - SERVER_URL=https://evogo.${DOMAIN_NAME:-localhost}
       - SERVER_PORT=${EVOGO_PORT:-8080}
       - CLIENT_NAME=${CLIENT_NAME:-evolution}
+      - AUTHENTICATION_TYPE=apikey
+      - SERVER_API_KEY=${EVOGO_API_KEY:-v161kLsxexbd966WpNzGjhdqjmIroDwL}
       - GLOBAL_API_KEY=${EVOGO_API_KEY:-v161kLsxexbd966WpNzGjhdqjmIroDwL}
       - AUTHENTICATION_API_KEY=${EVOGO_API_KEY:-v161kLsxexbd966WpNzGjhdqjmIroDwL}
       - AUTHENTICATION_EXPOSE_IN_FETCH_INSTANCES=true
@@ -226,6 +229,10 @@ services:
       - POSTGRES_DB=${POSTGRES_STD_DB:-evoc_db}
       - POSTGRES_AUTH_DB=postgresql://${POSTGRES_STD_USER:-postgres}:${POSTGRES_STD_PASSWORD}@postgres:5432/${POSTGRES_STD_DB:-evoc_db}?sslmode=disable
       - POSTGRES_USERS_DB=postgresql://${POSTGRES_STD_USER:-postgres}:${POSTGRES_STD_PASSWORD}@postgres:5432/${POSTGRES_STD_DB:-evoc_db}?sslmode=disable
+      - DATABASE_SAVE_DATA_INSTANCE=true
+      - DATABASE_SAVE_DATA_NEW_MESSAGE=true
+      - DATABASE_SAVE_MESSAGE_UPDATE=true
+      - DATABASE_SAVE_MESSAGES=false
       - REDIS_ENABLED=true
       - CACHE_REDIS_ENABLED=true
       - REDIS_HOST=redis
@@ -233,7 +240,6 @@ services:
       - REDIS_PASSWORD=${REDIS_PASSWORD}
       - REDIS_URI=redis://:${REDIS_PASSWORD}@redis:6379/0
       - CACHE_REDIS_URI=redis://:${REDIS_PASSWORD}@redis:6379/0
-      - DATABASE_SAVE_MESSAGES=false
       - WADEBUG=INFO
       - LOGTYPE=console
     volumes:
